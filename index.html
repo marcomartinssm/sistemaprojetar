@@ -255,6 +255,7 @@ tr:hover td{background:var(--bg-sec)}
 .login-btn{width:100%;padding:11px;border-radius:var(--r);border:none;background:var(--brand);color:#fff;font-size:14px;font-weight:600;cursor:pointer;margin-top:6px}
 .login-btn:hover{background:var(--brand-dark)}
 .login-err{font-size:12px;color:var(--red);margin-top:8px;display:none}
+.na-result-item:hover{background:var(--bg-sec);}
 .login-hint{font-size:11px;color:var(--text-ter);margin-top:18px;line-height:1.6}
 </style>
 </head>
@@ -418,7 +419,10 @@ tr:hover td{background:var(--bg-sec)}
 <div class="page" id="page-funil">
   <div class="top-bar">
     <div><div class="page-title">Funil de vendas</div><div class="page-sub">Acompanhe os leads em cada etapa do processo</div></div>
-    <div class="top-actions" id="funil-filters"></div>
+    <div class="top-actions">
+      <div id="funil-filters" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+      <button class="btn btn-primary" onclick="openNovoAtendimento()">+ Novo atendimento</button>
+    </div>
   </div>
   <div class="kpi-grid" id="funil-kpis"></div>
   <div class="card">
@@ -428,13 +432,102 @@ tr:hover td{background:var(--bg-sec)}
     <div class="card-hdr"><div class="card-title">Taxa de conversão entre etapas</div></div>
     <div id="funil-conv"></div>
   </div>
+
+  <!-- NOVO ATENDIMENTO MODAL -->
+  <div class="modal-overlay" id="novo-atend-modal">
+    <div class="modal-box">
+      <div class="modal-title">Novo atendimento</div>
+      <div class="fg"><label>Lead vinculado</label>
+        <select id="na-lead" onchange="preencherDadosNovoAtend()">
+          <option value="">Selecione um lead cadastrado...</option>
+        </select>
+      </div>
+      <div id="na-lead-info" style="display:none;background:var(--bg-sec);border-radius:var(--r);padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--text-sec)"></div>
+      <div class="fg-row">
+        <div class="fg"><label>Etapa inicial</label>
+          <select id="na-etapa">
+            <option value="pre">Pré-atendimento</option>
+            <option value="atend" selected>Atendimento</option>
+            <option value="agend">Ag. de visita</option>
+            <option value="visita">Visita</option>
+            <option value="proposta">Proposta</option>
+          </select>
+        </div>
+        <div class="fg"><label>Corretor responsável</label>
+          <select id="na-corretor">
+            <option>Juliano Borges</option><option>Samuel Apolinário</option>
+            <option>Silvana Sorato</option><option>Fernando Corrêa</option>
+            <option>Bervaldo Zilli</option><option>Marlon Araújo</option>
+            <option>Joice Pereira</option><option>Renato Lobo</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg"><label>Primeira interação / observação</label>
+        <textarea id="na-obs" placeholder="Ex: Primeiro contato realizado, cliente tem interesse em imóvel de 3 quartos..." style="min-height:80px"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeModal('novo-atend-modal')">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarNovoAtendimento()">Criar atendimento</button>
+      </div>
+    </div>
+  </div>
+
   <!-- LEAD DETAIL -->
   <div class="modal-overlay" id="funil-modal">
-    <div class="modal-box">
-      <div class="modal-title" id="funil-det-nome"></div>
+    <div class="modal-box" style="max-width:560px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <div class="modal-title" id="funil-det-nome" style="margin-bottom:0"></div>
+        <span id="funil-det-num" style="font-size:11px;font-weight:600;color:var(--brand);background:var(--brand-light);padding:3px 10px;border-radius:10px"></span>
+      </div>
       <div id="funil-det-rows"></div>
-      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap" id="funil-det-btns"></div>
-      <div class="modal-footer"><button class="btn" onclick="closeModal('funil-modal')">Fechar</button></div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap" id="funil-det-btns"></div>
+
+      <!-- HISTÓRICO DE INTERAÇÕES -->
+      <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px">
+        <div style="font-size:12px;font-weight:600;color:var(--text-sec);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">Histórico de interações</div>
+        <div id="funil-interacoes" style="max-height:180px;overflow-y:auto;margin-bottom:12px"></div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <textarea id="funil-nova-interacao" rows="2" 
+            style="font-size:13px;padding:8px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg-sec);color:var(--text);resize:none;outline:none;width:100%"
+            placeholder="Registre uma interação: visita realizada, ligação, proposta enviada..."></textarea>
+          <div style="display:flex;justify-content:flex-end">
+            <button class="btn btn-primary" onclick="salvarInteracao()" style="font-size:12px;padding:6px 14px">+ Registrar interação</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="margin-top:10px">
+        <button class="btn" onclick="closeModal('funil-modal')">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOVO ATENDIMENTO MODAL -->
+  <div class="modal-overlay" id="novo-atend-modal">
+    <div class="modal-box">
+      <div class="modal-title">Novo atendimento</div>
+      <div class="fg"><label>Lead vinculado</label>
+        <select id="na-lead" onchange="previewNovoAtend()">
+          <option value="">Selecione um lead...</option>
+        </select>
+      </div>
+      <div id="na-lead-preview" style="display:none;background:var(--bg-sec);border-radius:var(--r);padding:10px 12px;margin-bottom:10px;font-size:12px;color:var(--text-sec)"></div>
+      <div class="fg"><label>Etapa inicial</label>
+        <select id="na-etapa">
+          <option value="pre">Pré-atendimento</option>
+          <option value="atend" selected>Atendimento</option>
+          <option value="agend">Ag. de visita</option>
+          <option value="visita">Visita</option>
+          <option value="proposta">Proposta</option>
+        </select>
+      </div>
+      <div class="fg"><label>Primeira interação</label>
+        <textarea id="na-interacao" rows="3" style="font-size:13px;padding:8px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg-sec);color:var(--text);resize:none;width:100%" placeholder="Descreva o primeiro contato ou atendimento..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeModal('novo-atend-modal')">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarNovoAtendimento()">Criar atendimento</button>
+      </div>
     </div>
   </div>
 </div>
@@ -587,7 +680,12 @@ tr:hover td{background:var(--bg-sec)}
       <div class="fg"><label>Nome completo</label><input type="text" id="l-nome" placeholder="Ex: João da Silva"></div>
       <div class="fg-row"><div class="fg"><label>Telefone</label><input type="text" id="l-tel" placeholder="(48) 99999-0000"></div><div class="fg"><label>E-mail</label><input type="text" id="l-email" placeholder="email@exemplo.com"></div></div>
       <div class="fg-row"><div class="fg"><label>Perfil</label><select id="l-perfil"><option value="mcmv">MCMV</option><option value="medio">Médio padrão</option><option value="alto">Alto padrão</option><option value="indef">Indefinido</option></select></div><div class="fg"><label>Corretor</label><select id="l-corretor"><option>Juliano Borges</option><option>Samuel Apolinário</option><option>Silvana Sorato</option><option>Fernando Corrêa</option><option>Bervaldo Zilli</option><option>Marlon Araújo</option><option>Joice Pereira</option><option>Renato Lobo</option></select></div></div>
-      <div class="fg-row"><div class="fg"><label>Etapa</label><select id="l-etapa"><option>Pré-atendimento</option><option>Atendimento</option><option>Ag. de visita</option><option>Visita</option><option>Proposta</option><option>Fechamento</option><option>Funil de nutrição</option></select></div><div class="fg"><label>Status</label><select id="l-status"><option value="novo">Novo</option><option value="contato">Em contato</option><option value="funil">No funil</option><option value="convertido">Convertido</option><option value="inativo">Inativo</option></select></div></div>
+      <div class="fg-row">
+        <div class="fg"><label>Origem do lead</label>
+          <select id="l-origem"><option value="">Selecione...</option><option>Google Ads</option><option>Meta Ads</option><option>Instagram</option><option>Portal</option><option>Indicação</option><option>Outro</option></select>
+        </div>
+        <div class="fg"><label>Campanha</label><input type="text" id="l-campanha" placeholder="Ex: Google Ads — MCMV Abr"></div>
+      </div>
       <div class="fg-row">
         <div class="fg"><label>Origem do lead</label>
           <select id="l-origem"><option value="">Selecione...</option><option>Google Ads</option><option>Meta Ads</option><option>Instagram</option><option>Portal</option><option>Indicação</option><option>Outro</option></select>
@@ -1034,6 +1132,150 @@ tr:hover td{background:var(--bg-sec)}
 </main>
 
 <script>
+
+// ============================================================
+// SUPABASE
+// ============================================================
+const SB_URL='https://jgdbnkwhmesgjvsymgma.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnZGJua3dobWVzZ2p2c3ltZ21hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5MjAxODUsImV4cCI6MjA5MDQ5NjE4NX0.2KUPjnJE9vhzYviho16e3afWxyQL0usSjKXf2TLV00Q';
+const SB_HDR={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
+
+async function sbQ(table,method,body,query){
+  const url=SB_URL+'/rest/v1/'+table+(query?'?'+query:'');
+  const r=await fetch(url,{method:method||'GET',headers:SB_HDR,body:body?JSON.stringify(body):undefined});
+  if(!r.ok){console.error('SB',table,method,await r.text());return null;}
+  const ct=r.headers.get('content-type')||'';
+  return ct.includes('json')?r.json():null;
+}
+const sbGet=(t,q)=>sbQ(t,'GET',null,q);
+const sbIns=(t,d)=>sbQ(t,'POST',d);
+const sbUpd=(t,d,q)=>sbQ(t,'PATCH',d,q);
+const sbDel=(t,q)=>sbQ(t,'DELETE',null,q);
+
+function showLoading(msg){
+  var el=document.getElementById('sb-toast');
+  if(!el){el=document.createElement('div');el.id='sb-toast';
+    el.style.cssText='position:fixed;bottom:16px;right:16px;z-index:9999;background:var(--brand);color:#fff;font-size:12px;font-weight:600;padding:8px 16px;border-radius:20px;transition:opacity .3s';
+    document.body.appendChild(el);}
+  el.textContent=msg||'Salvando...';el.style.opacity='1';
+}
+function hideLoading(){var el=document.getElementById('sb-toast');if(el){setTimeout(function(){el.style.opacity='0';},800);}}
+
+// ── DB save helpers ───────────────────────────────────────────────────────────
+async function dbSaveLead(l){
+  showLoading('Salvando lead...');
+  var d={nome:l.nome,tel:l.tel,email:l.email,perfil:l.perfil,corretor:l.corretor,cidade:l.cidade,origem:l.origem,campanha:l.campanha};
+  var r=l._dbId?await sbUpd('leads',d,'id=eq.'+l._dbId):await sbIns('leads',[d]);
+  if(r&&r[0]&&!l._dbId)l._dbId=r[0].id;
+  hideLoading();
+}
+async function dbDeleteLead(id){await sbDel('leads','id=eq.'+id);}
+
+async function dbSaveNeg(n){
+  showLoading('Salvando negociação...');
+  var d={neg:n.neg,lead_id:n.leadId,etapa:n.etapa,corretor:n.corretor,status:n.status,obs:n.obs||'',dias:n.dias||0};
+  var r=n._dbId?await sbUpd('negociacoes',d,'id=eq.'+n._dbId):await sbIns('negociacoes',[d]);
+  if(r&&r[0]&&!n._dbId)n._dbId=r[0].id;
+  hideLoading();
+  return n._dbId;
+}
+async function dbUpdateNegEtapa(n){
+  if(!n._dbId)return;
+  await sbUpd('negociacoes',{etapa:n.etapa,status:n.status,dias:n.dias},'id=eq.'+n._dbId);
+}
+async function dbDeleteNeg(id){await sbDel('negociacoes','id=eq.'+id);}
+
+async function dbSaveInteracao(negDbId,it){
+  if(!negDbId)return;
+  await sbIns('interacoes',[{neg_id:negDbId,autor:it.autor,texto:it.texto}]);
+}
+
+async function dbSaveFechado(nf){
+  showLoading('Registrando fechamento...');
+  var d={neg:nf.neg,lead_id:nf.leadId||null,neg_id:nf._negDbId||null,cliente:nf.cliente,corretor:nf.corretor,cidade:nf.cidade,tipo_imovel:nf.tipo,valor:nf.valor,pagamento:nf.pagamento,com_pct:nf.comPct,com_reais:nf.comReais,nota_fiscal:nf.nf,imovel_tipo:nf.imovelTipo,data_fechamento:nf.data};
+  var r=await sbIns('negocios_fechados',[d]);
+  if(r&&r[0])nf._dbId=r[0].id;
+  hideLoading();
+}
+
+async function dbSaveMeta(m){
+  var d={corretor:m.corretor||'',cidade:m.cidade||'',valor:m.valor,mes:m.mes};
+  var r=m._dbId?await sbUpd('metas',d,'id=eq.'+m._dbId):await sbIns('metas',[d]);
+  if(r&&r[0]&&!m._dbId)m._dbId=r[0].id;
+}
+
+async function dbSaveCampanha(c){
+  showLoading('Salvando campanha...');
+  var d={nome:c.nome,canal:c.canal,mes:c.mes,invest:c.invest,leads_gerados:c.leads,receita:c.receita,unidade:c.unidade||''};
+  var r=c._dbId?await sbUpd('campanhas',d,'id=eq.'+c._dbId):await sbIns('campanhas',[d]);
+  if(r&&r[0]&&!c._dbId)c._dbId=r[0].id;
+  hideLoading();
+}
+async function dbDeleteCampanha(dbId){if(dbId)await sbDel('campanhas','id=eq.'+dbId);}
+
+async function dbSaveAcao(a){
+  showLoading('Salvando ação...');
+  var d={titulo:a.titulo,descricao:a.desc||'',responsavel:a.resp||'',categoria:a.cat||'outros',prazo:a.prazo||null,prioridade:a.prior||'media',status:a.status||'pendente',progresso:a.prog||0};
+  var r=a._dbId?await sbUpd('acoes',d,'id=eq.'+a._dbId):await sbIns('acoes',[d]);
+  if(r&&r[0]&&!a._dbId)a._dbId=r[0].id;
+  hideLoading();
+}
+async function dbDeleteAcao(dbId){if(dbId)await sbDel('acoes','id=eq.'+dbId);}
+
+async function dbSaveDisparo(d2){
+  var d={lead_id:d2.leadId||null,lead_nome:d2.lead,data_disparo:d2.data,canal:d2.canal,mensagem:d2.msg,corretor:d2.corretor,status:d2.status};
+  var r=d2._dbId?await sbUpd('disparos',d,'id=eq.'+d2._dbId):await sbIns('disparos',[d]);
+  if(r&&r[0]&&!d2._dbId)d2._dbId=r[0].id;
+}
+async function dbUpdateDisparo(dbId,status){if(dbId)await sbUpd('disparos',{status:status},'id=eq.'+dbId);}
+
+async function dbSaveSocial(s){
+  var d={rede:s.rede,periodo:s.periodo,seguidores:s.seguidores||0,alcance:s.alcance||0,impressoes:s.impressoes||0,engajamento:s.engajamento||0,cliques:s.cliques||0,leads_gerados:s.leads||0};
+  var r=s._dbId?await sbUpd('metricas_social',d,'id=eq.'+s._dbId):await sbIns('metricas_social',[d]);
+  if(r&&r[0]&&!s._dbId)s._dbId=r[0].id;
+}
+async function dbDeleteSocial(dbId){if(dbId)await sbDel('metricas_social','id=eq.'+dbId);}
+
+// ── Load all data ─────────────────────────────────────────────────────────────
+async function loadAllData(){
+  showLoading('Carregando dados...');
+  try{
+    const [rL,rN,rI,rF,rM,rC,rS,rA,rD]=await Promise.all([
+      sbGet('leads','order=id'),
+      sbGet('negociacoes','order=id'),
+      sbGet('interacoes','order=created_at'),
+      sbGet('negocios_fechados','order=id'),
+      sbGet('metas','order=id'),
+      sbGet('campanhas','order=id'),
+      sbGet('metricas_social','order=id'),
+      sbGet('acoes','order=id'),
+      sbGet('disparos','order=id')
+    ]);
+    // Build interacoes map by neg_id
+    var intMap={};
+    (rI||[]).forEach(function(i){
+      if(!intMap[i.neg_id])intMap[i.neg_id]=[];
+      var dt=new Date(i.created_at);
+      intMap[i.neg_id].push({data:dt.toLocaleDateString('pt-BR')+' '+dt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),autor:i.autor||'—',texto:i.texto,_dbId:i.id});
+    });
+    leads=(rL||[]).map(function(r){return{id:r.id,_dbId:r.id,nome:r.nome,tel:r.tel||'',email:r.email||'',perfil:r.perfil||'indef',corretor:r.corretor||'',cidade:r.cidade||'',origem:r.origem||'',campanha:r.campanha||''};});
+    leadNid=leads.length?Math.max.apply(null,leads.map(function(l){return l.id;}))+1:1;
+    negociacoes=(rN||[]).map(function(r){return{id:r.id,_dbId:r.id,neg:r.neg,leadId:r.lead_id,etapa:r.etapa||'pre',corretor:r.corretor||'',status:r.status||'novo',obs:r.obs||'',dias:r.dias||0,interacoes:intMap[r.id]||[]};});
+    negNid=negociacoes.length?Math.max.apply(null,negociacoes.map(function(n){return n.id;}))+1:1;
+    negociosFechados=(rF||[]).map(function(r){return{id:r.id,_dbId:r.id,neg:r.neg,cliente:r.cliente,corretor:r.corretor,cidade:r.cidade||'—',tipo:r.tipo_imovel,valor:r.valor,pagamento:r.pagamento,comPct:r.com_pct,comReais:r.com_reais,nf:r.nota_fiscal,imovelTipo:r.imovel_tipo,data:r.data_fechamento||''};});
+    metas=(rM||[]).map(function(r){return{id:r.id,_dbId:r.id,corretor:r.corretor||'',cidade:r.cidade||'',valor:r.valor,mes:r.mes};});
+    metaNid=metas.length?Math.max.apply(null,metas.map(function(m){return m.id;}))+1:1;
+    campanhas=(rC||[]).map(function(r){return{id:r.id,_dbId:r.id,nome:r.nome,canal:r.canal,mes:r.mes,invest:r.invest||0,leads:r.leads_gerados||0,receita:r.receita||0,unidade:r.unidade||''};});
+    mktNid=campanhas.length?Math.max.apply(null,campanhas.map(function(c){return c.id;}))+1:1;
+    socialData=(rS||[]).map(function(r){return{id:r.id,_dbId:r.id,rede:r.rede,periodo:r.periodo,seguidores:r.seguidores||0,alcance:r.alcance||0,impressoes:r.impressoes||0,engajamento:r.engajamento||0,cliques:r.cliques||0,leads:r.leads_gerados||0};});
+    acoes=(rA||[]).map(function(r){return{id:r.id,_dbId:r.id,titulo:r.titulo,desc:r.descricao||'',resp:r.responsavel||'',cat:r.categoria||'outros',prazo:r.prazo||'',prior:r.prioridade||'media',status:r.status||'pendente',prog:r.progresso||0};});
+    planoNid=acoes.length?Math.max.apply(null,acoes.map(function(a){return a.id;}))+1:1;
+    disparos=(rD||[]).map(function(r){return{id:r.id,_dbId:r.id,lead:r.lead_nome,leadId:r.lead_id,data:r.data_disparo,canal:r.canal,msg:r.mensagem,corretor:r.corretor,status:r.status};});
+    nutrNid=disparos.length?Math.max.apply(null,disparos.map(function(d){return d.id;}))+1:1;
+  }catch(e){console.error('loadAllData error:',e);}
+  hideLoading();
+  initDashboard();
+}
 // ============================================================
 // DADOS GLOBAIS
 // ============================================================
@@ -1088,24 +1330,14 @@ const FUNIL_DATA=[
   {id:'fechamento',nome:'Fechamento',count:15,conv:68},
 ];
 
-let leads=[
-  {id:1,nome:'Roberto Farias',tel:'(48) 99801-2233',email:'roberto.f@email.com',perfil:'alto',etapa:'proposta',corretor:'Juliano Borges',status:'funil',obs:'Cobertura',origem:'Google Ads',campanha:'Google Ads — MCMV Abr',cidade:'Criciúma'},
-  {id:2,nome:'Juliana Mota',tel:'(48) 99612-4455',email:'ju.mota@email.com',perfil:'mcmv',etapa:'atend',corretor:'Juliano Borges',status:'contato',obs:'',origem:'Instagram',campanha:'Instagram — Abr',cidade:'Criciúma'},
-  {id:3,nome:'Marcos Duarte',tel:'(48) 98833-6677',email:'marcos.d@email.com',perfil:'alto',etapa:'proposta',corretor:'Samuel Apolinário',status:'funil',obs:'Beira mar',origem:'Indicação',campanha:'',cidade:'Criciúma'},
-  {id:4,nome:'Fernanda Luz',tel:'(48) 99744-8899',email:'fernanda.l@email.com',perfil:'medio',etapa:'visita',corretor:'Silvana Sorato',status:'funil',obs:'',origem:'Meta Ads',campanha:'Meta Ads — Mar',cidade:'Criciúma'},
-  {id:5,nome:'Paulo Henrique',tel:'(48) 98655-0011',email:'paulo.h@email.com',perfil:'mcmv',etapa:'pre',corretor:'Fernando Corrêa',status:'novo',obs:'',origem:'Portal',campanha:'Portal Mar',cidade:'Araranguá'},
-  {id:6,nome:'Silvia Torres',tel:'(48) 99566-2233',email:'silvia.t@email.com',perfil:'medio',etapa:'agend',corretor:'Fernando Corrêa',status:'contato',obs:'',origem:'Google Ads',campanha:'Google Ads — Mar',cidade:'Araranguá'},
-  {id:7,nome:'Diego Almeida',tel:'(48) 98477-4455',email:'diego.a@email.com',perfil:'medio',etapa:'atend',corretor:'Bervaldo Zilli',status:'contato',obs:'Comercial',origem:'Indicação',campanha:'',cidade:'Araranguá'},
-  {id:8,nome:'Carla Vieira',tel:'(48) 99388-6677',email:'carla.v@email.com',perfil:'mcmv',etapa:'fechamento',corretor:'Marlon Araújo',status:'convertido',obs:'',origem:'Meta Ads',campanha:'Meta Ads — Fev',cidade:'Araranguá'},
-  {id:9,nome:'Tiago Borges',tel:'(48) 98299-8899',email:'tiago.b@email.com',perfil:'medio',etapa:'agend',corretor:'Joice Pereira',status:'funil',obs:'',origem:'Instagram',campanha:'Instagram — Mar',cidade:'Araranguá'},
-  {id:10,nome:'Aline Costa',tel:'(48) 99100-0011',email:'aline.c@email.com',perfil:'alto',etapa:'proposta',corretor:'Renato Lobo',status:'funil',obs:'Duplex',origem:'Google Ads',campanha:'Google Ads — Abr',cidade:'Araranguá'},
-  {id:11,nome:'Renato Melo',tel:'(48) 98011-2233',email:'renato.m@email.com',perfil:'medio',etapa:'pre',corretor:'Joice Pereira',status:'novo',obs:'',origem:'Portal',campanha:'Portal Abr',cidade:'Araranguá'},
-  {id:12,nome:'Beatriz Santos',tel:'(48) 99922-4455',email:'beatriz.s@email.com',perfil:'mcmv',etapa:'visita',corretor:'Renato Lobo',status:'funil',obs:'',origem:'Meta Ads',campanha:'Meta Ads — Abr',cidade:'Araranguá'},
-  {id:13,nome:'Gustavo Pires',tel:'(48) 98801-3344',email:'gustavo.p@email.com',perfil:'alto',etapa:'fechamento',corretor:'Juliano Borges',status:'funil',obs:'Apto beira mar',origem:'Indicação',campanha:'',cidade:'Criciúma'},
-  {id:14,nome:'Natália Ramos',tel:'(48) 99712-5566',email:'natalia.r@email.com',perfil:'medio',etapa:'visita',corretor:'Samuel Apolinário',status:'funil',obs:'',origem:'Google Ads',campanha:'Google Ads — Mar',cidade:'Criciúma'},
-  {id:15,nome:'Eduardo Cunha',tel:'(48) 98623-7788',email:'eduardo.c@email.com',perfil:'mcmv',etapa:'agend',corretor:'Bervaldo Zilli',status:'contato',obs:'',origem:'Instagram',campanha:'Instagram — Mar',cidade:'Araranguá'},
-];
-let leadNid=16,leadEditId=null;
+let leads=[];
+let leadNid=1;
+
+// NEGOCIAÇÕES — entidade separada dos leads
+// Cada negociação é vinculada a um lead e representa o processo de venda
+let negociacoes=[];
+let negNid=1;
+let leadEditId=null;
 
 const PREV_CORRETORES={
   'Juliano Borges':{cor:'#9B3060',realizado:[780,860,950,890,null,null],previsto:[null,null,null,890,1100,1300],meta:[900,900,900,900,900,900]},
@@ -1132,19 +1364,7 @@ let NEGOCIOS=[
   {corretor:'Renato Lobo',cliente:'Beatriz Santos',imovel:'Casa MCMV - Loteamento B',valor:222000,prev:'Jun/2026',status:'funil'},
 ];
 
-let disparos=[
-  {id:1,lead:'Roberto Farias',data:'2026-04-01',canal:'WhatsApp',msg:'Boas-vindas e apresentação da equipe',corretor:'Juliano Borges',status:'enviado'},
-  {id:2,lead:'Juliana Mota',data:'2026-04-01',canal:'WhatsApp',msg:'Boas-vindas e apresentação da equipe',corretor:'Juliano Borges',status:'enviado'},
-  {id:3,lead:'Roberto Farias',data:'2026-04-03',canal:'E-mail',msg:'Envio de portfólio de imóveis disponíveis',corretor:'Juliano Borges',status:'enviado'},
-  {id:4,lead:'Fernanda Luz',data:'2026-04-05',canal:'WhatsApp',msg:'Follow-up: dúvidas e interesse confirmado?',corretor:'Fernando Corrêa',status:'pendente'},
-  {id:5,lead:'Paulo Henrique',data:'2026-04-07',canal:'WhatsApp',msg:'Boas-vindas e apresentação da equipe',corretor:'Fernando Corrêa',status:'pendente'},
-  {id:6,lead:'Silvia Torres',data:'2026-04-08',canal:'E-mail',msg:'Envio de portfólio de imóveis disponíveis',corretor:'Silvana Sorato',status:'atrasado'},
-  {id:7,lead:'Marcos Duarte',data:'2026-04-10',canal:'WhatsApp',msg:'Novidade de imóvel compatível com o perfil',corretor:'Juliano Borges',status:'pendente'},
-  {id:8,lead:'Diego Almeida',data:'2026-04-12',canal:'WhatsApp',msg:'Follow-up: dúvidas e interesse confirmado?',corretor:'Bervaldo Zilli',status:'pendente'},
-  {id:9,lead:'Tiago Borges',data:'2026-04-15',canal:'E-mail',msg:'Convite para visita presencial ou virtual',corretor:'Joice Pereira',status:'pendente'},
-  {id:10,lead:'Juliana Mota',data:'2026-04-18',canal:'WhatsApp',msg:'Novidade de imóvel compatível com o perfil',corretor:'Juliano Borges',status:'pendente'},
-  {id:11,lead:'Silvia Torres',data:'2026-03-28',canal:'WhatsApp',msg:'Boas-vindas e apresentação da equipe',corretor:'Silvana Sorato',status:'atrasado'},
-];
+let disparos=[];
 let nutrNid=12;
 let calBase=new Date(2026,3,1);
 
@@ -1161,23 +1381,7 @@ const NUTR_LEADS=[
   {nome:'Beatriz Santos',perfil:'mcmv',corretor:'Renato Lobo'},
 ];
 
-let campanhas=[
-  {id:1,nome:'Google Ads — MCMV Jan',canal:'Google Ads',mes:'Jan',invest:3200,leads:24,receita:42000,unidade:'Araranguá'},
-  {id:2,nome:'Meta Ads — Médio Jan',canal:'Meta Ads',mes:'Jan',invest:2800,leads:18,receita:38000,unidade:'Criciúma'},
-  {id:3,nome:'Instagram — Alto Jan',canal:'Instagram',mes:'Jan',invest:1500,leads:8,receita:25000,unidade:'Ambas'},
-  {id:4,nome:'Portal Imobiliário Jan',canal:'Portal',mes:'Jan',invest:1200,leads:14,receita:18000,unidade:'Araranguá'},
-  {id:5,nome:'Google Ads — MCMV Fev',canal:'Google Ads',mes:'Fev',invest:3500,leads:27,receita:46000,unidade:'Araranguá'},
-  {id:6,nome:'Meta Ads — Fev',canal:'Meta Ads',mes:'Fev',invest:3000,leads:21,receita:40000,unidade:'Criciúma'},
-  {id:7,nome:'Indicação — Fev',canal:'Indicação',mes:'Fev',invest:0,leads:6,receita:12000,unidade:'Ambas'},
-  {id:8,nome:'Google Ads — Mar',canal:'Google Ads',mes:'Mar',invest:4000,leads:31,receita:54000,unidade:'Ambas'},
-  {id:9,nome:'Meta Ads — Mar',canal:'Meta Ads',mes:'Mar',invest:3200,leads:22,receita:43000,unidade:'Criciúma'},
-  {id:10,nome:'Instagram — Mar',canal:'Instagram',mes:'Mar',invest:1800,leads:11,receita:28000,unidade:'Araranguá'},
-  {id:11,nome:'Portal Mar',canal:'Portal',mes:'Mar',invest:1400,leads:16,receita:22000,unidade:'Criciúma'},
-  {id:12,nome:'Google Ads — Abr',canal:'Google Ads',mes:'Abr',invest:4200,leads:33,receita:58000,unidade:'Ambas'},
-  {id:13,nome:'Meta Ads — Abr',canal:'Meta Ads',mes:'Abr',invest:3400,leads:24,receita:47000,unidade:'Araranguá'},
-  {id:14,nome:'Indicação — Abr',canal:'Indicação',mes:'Abr',invest:0,leads:9,receita:18000,unidade:'Ambas'},
-  {id:15,nome:'Instagram — Abr',canal:'Instagram',mes:'Abr',invest:2000,leads:13,receita:32000,unidade:'Criciúma'},
-];
+let campanhas=[];
 let mktNid=16,mktEditId=null,mktMesFiltro='todos';
 
 let usuarios=[
@@ -1301,6 +1505,16 @@ function setUnidade(u,el){document.querySelectorAll('.top-bar .filter-btn').forE
 // ============================================================
 let funilCorretor='todos';
 let funilCidade='todas';
+
+function getLeadById(id){return leads.find(function(l){return l.id===id;})||{};}
+function getFunilNegs(){
+  var base=getAccessFilter(negociacoes,'corretor');
+  if(funilCorretor!=='todos')base=base.filter(function(n){return n.corretor===funilCorretor;});
+  if(funilCidade!=='todas')base=base.filter(function(n){
+    var l=getLeadById(n.leadId);return l&&l.cidade===funilCidade;
+  });
+  return base;
+}
 function initFunil(){
   var el=document.getElementById('funil-filters');
   if(!el)return;
@@ -1353,27 +1567,33 @@ function getFunilLeads(){
   return base;
 }
 function renderFunil(){
-  const vis=getFunilLeads();
-  document.getElementById('funil-kpis').innerHTML=ETAPAS.map(e=>{
-    const c=vis.filter(l=>l.etapa===e.id).length;
-    return`<div class="kpi-card"><div class="kpi-label"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${e.cor};margin-right:5px"></span>${e.label}</div><div class="kpi-val">${c}</div><div class="kpi-sub">${c===1?'lead':'leads'}</div></div>`;
+  const vis=getFunilNegs();
+  document.getElementById('funil-kpis').innerHTML=ETAPAS.map(function(e){
+    var c=vis.filter(function(n){return n.etapa===e.id;}).length;
+    return '<div class="kpi-card"><div class="kpi-label"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+e.cor+';margin-right:5px"></span>'+e.label+'</div><div class="kpi-val">'+c+'</div><div class="kpi-sub">'+(c===1?'negociação':'negociações')+'</div></div>';
   }).join('');
   const kanbanEl=document.getElementById('funil-kanban');
   kanbanEl.innerHTML='';
   ETAPAS.forEach(function(e){
-    const els=vis.filter(function(l){return l.etapa===e.id;});
-    const cards=els.map(function(l){
-      const p=PM[l.perfil]||PM['indef'];
-      const origemTag=l.origem?'<span style="font-size:9px;padding:1px 5px;border-radius:4px;background:var(--bg-sec);color:var(--text-ter);margin-top:3px;display:inline-block">'+l.origem+'</span>':'';
+    const els=vis.filter(function(n){return n.etapa===e.id;});
+    const cards=els.map(function(n){
+      var l=getLeadById(n.leadId);
+      var p=PM[l.perfil]||PM['indef'];
+      var origemTag=l.origem?'<span style="font-size:9px;padding:1px 5px;border-radius:4px;background:var(--bg-sec);color:var(--text-ter);margin-top:3px;display:inline-block">'+l.origem+'</span>':'';
+      var intCount=n.interacoes?n.interacoes.length:0;
       return '<div class="k-card" draggable="true" '+
-        'ondragstart="onDragStart(event,'+l.id+')" '+
+        'ondragstart="onDragStart(event,'+n.id+')" '+
         'ondragend="onDragEnd(event)" '+
-        'onclick="openFunilDetail('+l.id+')">'+
-        '<div class="k-name">'+l.nome+'</div>'+
-        '<div class="k-imovel">'+getLeadImovel(l)+'</div>'+
-        '<div class="k-footer"><span class="pill '+p.cls+'">'+p.l+'</span><span class="k-dias">'+(l.dias||1)+'d</span></div>'+
+        'onclick="openFunilDetail('+n.id+')">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'+
+        '<span style="font-size:9px;font-weight:600;color:var(--brand);letter-spacing:.5px">'+n.neg+'</span>'+
+        '<span style="font-size:9px;color:var(--text-ter)">'+(intCount>0?intCount+' interação(ões)':'sem interações')+'</span>'+
+        '</div>'+
+        '<div class="k-name">'+(l.nome||'Lead não encontrado')+'</div>'+
+        '<div class="k-imovel">'+(l.perfil?getLeadImovelByPerfil(l.perfil):'—')+'</div>'+
+        '<div class="k-footer"><span class="pill '+p.cls+'">'+p.l+'</span><span class="k-dias">'+(n.dias||1)+'d</span></div>'+
         '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px">'+
-        '<span style="font-size:10px;color:var(--text-ter)">'+l.corretor.split(' ')[0]+'</span>'+
+        '<span style="font-size:10px;color:var(--text-ter)">'+n.corretor.split(' ')[0]+'</span>'+
         origemTag+
         '</div></div>';
     }).join('');
@@ -1392,50 +1612,185 @@ function renderFunil(){
     })(e.id);
     kanbanEl.appendChild(colDiv);
   });
-  const total=vis.filter(l=>l.etapa===ETAPAS[0].id).length||1;
-  document.getElementById('funil-conv').innerHTML=ETAPAS.map(e=>{
-    const c=vis.filter(l=>l.etapa===e.id).length;const p=Math.round(c/total*100);
-    return`<div class="funil-row"><div class="funil-dot" style="background:${e.cor}"></div><span class="funil-name">${e.label}</span><div class="funil-bar-wrap" style="max-width:120px"><div class="funil-bar-bg"><div class="funil-bar-fill" style="width:${Math.min(p,100)}%;background:${e.cor}"></div></div></div><span class="funil-count">${c}</span><span class="funil-pct">${p}%</span></div>`;
+  var total=vis.filter(function(n){return n.etapa===ETAPAS[0].id;}).length||1;
+  document.getElementById('funil-conv').innerHTML=ETAPAS.map(function(e){
+    var c=vis.filter(function(n){return n.etapa===e.id;}).length;
+    var p=Math.round(c/total*100);
+    return '<div class="funil-row"><div class="funil-dot" style="background:'+e.cor+'"></div><span class="funil-name">'+e.label+'</span><div class="funil-bar-wrap" style="max-width:120px"><div class="funil-bar-bg"><div class="funil-bar-fill" style="width:'+Math.min(p,100)+'%;background:'+e.cor+'"></div></div></div><span class="funil-count">'+c+'</span><span class="funil-pct">'+p+'%</span></div>';
   }).join('');
 }
-function getLeadImovel(l){const map={'alto':'Apto alto padrão','medio':'Casa / apto médio padrão','mcmv':'Imóvel MCMV'};return map[l.perfil]||'Imóvel';}
-function openFunilDetail(id){
-  const l=leads.find(x=>x.id===id);if(!l)return;
-  const e=ETAPAS.find(x=>x.id===l.etapa);
-  document.getElementById('funil-det-nome').textContent=l.nome;
+function getLeadImovel(l){var map={'alto':'Apto alto padrão','medio':'Casa / apto médio padrão','mcmv':'Imóvel MCMV','indef':'Imóvel'};return l?map[l.perfil]||'Imóvel':'—';}
+function getLeadImovelByPerfil(p){var map={'alto':'Apto alto padrão','medio':'Casa / apto médio padrão','mcmv':'Imóvel MCMV','indef':'Imóvel'};return map[p]||'Imóvel';}
+let detalhLeadId=null;
+function openFunilDetail(negId){
+  var neg=negociacoes.find(function(x){return x.id===negId;});
+  if(!neg)return;
+  var l=getLeadById(neg.leadId);
+  var e=ETAPAS.find(function(x){return x.id===neg.etapa;})||{label:'—'};
+  var pm=PM[l.perfil]||PM['indef'];
+  // Header: NEG number top right
+  document.getElementById('funil-det-nome').innerHTML=
+    '<div style="display:flex;align-items:center;justify-content:space-between">'+
+    '<span>'+(l.nome||'Lead não encontrado')+'</span>'+
+    '<span style="font-size:12px;font-weight:700;color:var(--brand);letter-spacing:.5px">'+neg.neg+'</span>'+
+    '</div>';
+  // Lead info table
   document.getElementById('funil-det-rows').innerHTML=
     '<table style="width:100%;font-size:13px;border-collapse:collapse">'+
-    '<tr><td style="color:var(--text-sec);padding:6px 0;border-bottom:1px solid var(--border)">Corretor</td><td style="padding:6px 0;border-bottom:1px solid var(--border);font-weight:600">'+l.corretor+'</td></tr>'+
-    '<tr><td style="color:var(--text-sec);padding:6px 0;border-bottom:1px solid var(--border)">Perfil</td><td style="padding:6px 0;border-bottom:1px solid var(--border)"><span class="pill '+PM[l.perfil]?.cls+'">'+PM[l.perfil]?.l+'</span></td></tr>'+
-    '<tr><td style="color:var(--text-sec);padding:6px 0;border-bottom:1px solid var(--border)">Cidade</td><td style="padding:6px 0;border-bottom:1px solid var(--border);font-weight:600">'+(l.cidade||'—')+'</td></tr>'+
-    '<tr><td style="color:var(--text-sec);padding:6px 0;border-bottom:1px solid var(--border)">Origem do lead</td><td style="padding:6px 0;border-bottom:1px solid var(--border);font-weight:600">'+(l.origem||'—')+'</td></tr>'+
-    '<tr><td style="color:var(--text-sec);padding:6px 0;border-bottom:1px solid var(--border)">Campanha</td><td style="padding:6px 0;border-bottom:1px solid var(--border)">'+(l.campanha||'—')+'</td></tr>'+
-    '<tr><td style="color:var(--text-sec);padding:6px 0;border-bottom:1px solid var(--border)">Etapa atual</td><td style="padding:6px 0;border-bottom:1px solid var(--border);font-weight:600">'+e.label+'</td></tr>'+
-    '<tr><td style="color:var(--text-sec);padding:6px 0;border-bottom:1px solid var(--border)">Status</td><td style="padding:6px 0;border-bottom:1px solid var(--border)"><span class="pill '+SM[l.status].cls+'">'+SM[l.status].l+'</span></td></tr>'+
+    '<tr><td style="color:var(--text-sec);padding:6px 0;border-bottom:1px solid var(--border)">Negociação</td><td style="padding:6px 0;border-bottom:1px solid var(--border);font-weight:600;color:var(--brand)">'+neg.neg+'</td></tr>'+
+    '<tr><td style="color:var(--text-sec);padding:6px 0;border-bottom:1px solid var(--border)">Lead</td><td style="padding:6px 0;border-bottom:1px solid var(--border);font-weight:600">'+(l.nome||'—')+'</td></tr>'+
+    '<tr><td style="color:var(--text-sec);padding:6px 0;border-bottom:1px solid var(--border)">Corretor</td><td style="padding:6px 0;border-bottom:1px solid var(--border)">'+neg.corretor+'</td></tr>'+
+    '<tr><td style="color:var(--text-sec);padding:6px 0;border-bottom:1px solid var(--border)">Perfil</td><td style="padding:6px 0;border-bottom:1px solid var(--border)"><span class="pill '+pm.cls+'">'+pm.l+'</span></td></tr>'+
+    '<tr><td style="color:var(--text-sec);padding:6px 0;border-bottom:1px solid var(--border)">Cidade</td><td style="padding:6px 0;border-bottom:1px solid var(--border)">'+(l.cidade||'—')+'</td></tr>'+
+    '<tr><td style="color:var(--text-sec);padding:6px 0;border-bottom:1px solid var(--border)">Origem</td><td style="padding:6px 0;border-bottom:1px solid var(--border)">'+(l.origem||'—')+'</td></tr>'+
     '<tr><td style="color:var(--text-sec);padding:6px 0;border-bottom:1px solid var(--border)">Telefone</td><td style="padding:6px 0;border-bottom:1px solid var(--border)">'+(l.tel||'—')+'</td></tr>'+
-    '<tr><td style="color:var(--text-sec);padding:6px 0;border-bottom:1px solid var(--border)">E-mail</td><td style="padding:6px 0;border-bottom:1px solid var(--border)">'+(l.email||'—')+'</td></tr>'+
-    (l.obs?'<tr><td style="color:var(--text-sec);padding:6px 0">Obs.</td><td style="padding:6px 0">'+l.obs+'</td></tr>':'')+
+    '<tr><td style="color:var(--text-sec);padding:6px 0;border-bottom:1px solid var(--border)">Etapa atual</td><td style="padding:6px 0;border-bottom:1px solid var(--border);font-weight:600">'+e.label+'</td></tr>'+
+    (neg.obs?'<tr><td style="color:var(--text-sec);padding:6px 0">Obs.</td><td style="padding:6px 0">'+neg.obs+'</td></tr>':'')+
     '</table>';
-  const idx=ETAPAS.findIndex(x=>x.id===l.etapa);
-  let btns='';
-  if(idx>0)btns+=`<button class="btn" onclick="moverLead(${id},-1)">← Voltar etapa</button>`;
-  if(idx<ETAPAS.length-1)btns+=`<button class="btn btn-primary" onclick="moverLead(${id},1)">Avançar etapa →</button>`;
+  // Interaction history
+  var interacoes=neg.interacoes||[];
+  var intHtml=interacoes.length>0?
+    interacoes.slice().reverse().map(function(it){
+      return '<div style="padding:8px 10px;border-radius:var(--r);background:var(--bg-sec);margin-bottom:6px">'+
+        '<div style="font-size:10px;color:var(--text-ter);margin-bottom:3px">'+it.data+' · '+it.autor+'</div>'+
+        '<div style="font-size:12px;color:var(--text);line-height:1.5">'+it.texto+'</div>'+
+        '</div>';
+    }).join(''):
+    '<div style="font-size:12px;color:var(--text-ter);padding:8px 0">Nenhuma interação registrada.</div>';
+  document.getElementById('funil-det-rows').innerHTML+=
+    '<div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">'+
+    '<div style="font-size:11px;font-weight:600;color:var(--text-sec);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">'+
+    'Histórico de interações ('+interacoes.length+')</div>'+
+    '<div id="funil-int-hist" style="max-height:160px;overflow-y:auto;margin-bottom:10px">'+intHtml+'</div>'+
+    '<textarea id="funil-int-input" placeholder="Registre uma nova interação..." style="width:100%;font-size:12px;padding:8px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg-sec);color:var(--text);resize:vertical;min-height:60px;outline:none;font-family:inherit;box-sizing:border-box"></textarea>'+
+    '<button class="btn btn-primary" style="margin-top:6px;width:100%;font-size:12px" onclick="salvarInteracao('+negId+')">Salvar interação</button>'+
+    '</div>';
+  // Advance/back buttons
+  var idx=ETAPAS.findIndex(function(x){return x.id===neg.etapa;});
+  var btns='';
+  if(idx>0)btns+='<button class="btn" onclick="moverNeg('+negId+',-1)">← Voltar etapa</button>';
+  if(idx<ETAPAS.length-1)btns+='<button class="btn btn-primary" onclick="moverNeg('+negId+',1)">Avançar etapa →</button>';
   document.getElementById('funil-det-btns').innerHTML=btns;
   document.getElementById('funil-modal').classList.add('open');
 }
-function moverLead(id,dir){
-  const l=leads.find(x=>x.id===id);if(!l)return;
-  const idx=ETAPAS.findIndex(e=>e.id===l.etapa);
-  const ni=idx+dir;if(ni<0||ni>=ETAPAS.length)return;
-  const novaEtapa=ETAPAS[ni].id;
-  closeModal('funil-modal');
-  if(l.etapa==='proposta'&&novaEtapa==='fechamento'){
-    openFechamentoForm(id);
-    return;
-  }
-  l.etapa=novaEtapa;l.dias=0;
+function renderInteracoes(neg){
+  _currentNegId=neg.id;
+  var hist=document.getElementById('funil-interacoes');
+  if(!hist)return;
+  var ints=neg.interacoes||[];
+  hist.innerHTML=ints.length>0?ints.slice().reverse().map(function(it){
+    return '<div style="padding:8px 10px;border-radius:var(--r);background:var(--bg-sec);margin-bottom:6px;border-left:3px solid var(--brand)">'+
+      '<div style="font-size:10px;color:var(--text-ter);margin-bottom:4px">'+it.data+' · <strong>'+it.autor+'</strong></div>'+
+      '<div style="font-size:12px;color:var(--text);line-height:1.5">'+it.texto+'</div></div>';
+  }).join(''):'<div style="font-size:12px;color:var(--text-ter);padding:8px 0;text-align:center">Nenhuma interação registrada.</div>';
+  var nova=document.getElementById('funil-nova-interacao');
+  if(nova)nova.value='';
+}
+function salvarInteracao(){
+  const inp=document.getElementById('funil-nova-interacao');
+  if(!inp||!detalhLeadId)return;
+  const texto=inp.value.trim();
+  if(!texto){alert('Digite o texto da interação.');return;}
+  const l=leads.find(function(x){return x.id===detalhLeadId;});
+  if(!l)return;
+  if(!l.interacoes)l.interacoes=[];
+  const hoje=new Date();
+  const data=String(hoje.getDate()).padStart(2,'0')+'/'+String(hoje.getMonth()+1).padStart(2,'0')+'/'+hoje.getFullYear();
+  l.interacoes.push({data:data,texto:texto,autor:currentUser?currentUser.nome:l.corretor});
+  inp.value='';
+  renderInteracoes(detalhLeadId);
   renderFunil();
 }
+
+function openNovoAtendimento(){
+  if(!document.getElementById('na-busca'))return;
+  document.getElementById('na-busca').value='';
+  document.getElementById('na-resultados').style.display='none';
+  document.getElementById('na-resultados').innerHTML='';
+  document.getElementById('na-lead-selecionado').style.display='none';
+  document.getElementById('na-lead-id').value='';
+  var obs=document.getElementById('na-interacao');
+  if(obs)obs.value='';
+  var corrEl=document.getElementById('na-corretor');
+  if(currentUser&&currentUser.perfil==='corretor'&&corrEl)corrEl.value=currentUser.nome;
+  document.getElementById('novo-atend-modal').classList.add('open');
+  setTimeout(function(){var b=document.getElementById('na-busca');if(b)b.focus();},100);
+}
+function buscarLeadNovoAtend(){
+  var termo=document.getElementById('na-busca').value.toLowerCase().trim();
+  var res=document.getElementById('na-resultados');
+  document.getElementById('na-lead-id').value='';
+  document.getElementById('na-lead-selecionado').style.display='none';
+  if(!termo){res.style.display='none';res.innerHTML='';return;}
+  var filtrados=getAccessFilter(leads,'corretor').filter(function(l){
+    return l.nome.toLowerCase().includes(termo)||(l.tel&&l.tel.includes(termo))||(l.cidade&&l.cidade.toLowerCase().includes(termo));
+  });
+  if(!filtrados.length){
+    res.innerHTML='<div style="padding:10px 12px;font-size:12px;color:var(--text-ter)">Nenhum lead encontrado</div>';
+    res.style.display='block';return;
+  }
+  res.innerHTML=filtrados.map(function(l){
+    var pm=PM[l.perfil]||PM['indef'];
+    var nc=negociacoes.filter(function(n){return n.leadId===l.id;}).length;
+    return '<div onclick="selecionarLeadAtend('+l.id+')" class="na-result-item" style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);font-size:12px">'+
+      '<div style="font-weight:600;color:var(--text)">'+l.nome+'</div>'+
+      '<div style="color:var(--text-sec);font-size:11px;margin-top:2px"><span class="pill '+pm.cls+'">'+pm.l+'</span> · '+(l.cidade||'—')+' · '+(l.tel||'—')+' · <span style="color:var(--brand-dark)">'+nc+' neg.</span></div>'+
+      '</div>';
+  }).join('');
+  res.style.display='block';
+}
+function selecionarLeadAtend(leadId){
+  var l=leads.find(function(x){return x.id===leadId;});
+  if(!l)return;
+  document.getElementById('na-lead-id').value=leadId;
+  document.getElementById('na-busca').value=l.nome;
+  document.getElementById('na-resultados').style.display='none';
+  var pm=PM[l.perfil]||PM['indef'];
+  var nc=negociacoes.filter(function(n){return n.leadId===leadId;}).length;
+  var sel=document.getElementById('na-lead-selecionado');
+  sel.innerHTML='<strong>'+l.nome+'</strong> · <span class="pill '+pm.cls+'">'+pm.l+'</span> · '+(l.cidade||'—')+(l.tel?' · '+l.tel:'')+(nc>0?'<br><span style="font-size:11px">'+nc+' negociação(ões) existente(s)</span>':'');
+  sel.style.display='block';
+  var corrEl=document.getElementById('na-corretor');
+  if(corrEl)corrEl.value=l.corretor;
+}
+
+function salvarNovoAtendimento(){
+  const id=parseInt(document.getElementById('na-lead').value);
+  if(!id){alert('Selecione um lead.');return;}
+  const l=leads.find(function(x){return x.id===id;});
+  if(!l)return;
+  const etapa=document.getElementById('na-etapa').value;
+  const texto=document.getElementById('na-interacao').value.trim();
+  l.etapa=etapa;l.status='funil';l.dias=0;
+  if(!l.interacoes)l.interacoes=[];
+  if(texto){
+    const hoje=new Date();
+    const data=String(hoje.getDate()).padStart(2,'0')+'/'+String(hoje.getMonth()+1).padStart(2,'0')+'/'+hoje.getFullYear();
+    l.interacoes.push({data:data,texto:texto,autor:currentUser?currentUser.nome:l.corretor});
+  }
+  closeModal('novo-atend-modal');
+  renderFunil();
+}
+
+function gerarNumNeg(){return 'NEG-'+String(leadNid).padStart(3,'0');}
+
+function moverNeg(negId,dir){
+  var neg=negociacoes.find(function(x){return x.id===negId;});
+  if(!neg)return;
+  var idx=ETAPAS.findIndex(function(e){return e.id===neg.etapa;});
+  var ni=idx+dir;
+  if(ni<0||ni>=ETAPAS.length)return;
+  var novaEtapa=ETAPAS[ni].id;
+  closeModal('funil-modal');
+  if(neg.etapa==='proposta'&&novaEtapa==='fechamento'){
+    openFechamentoForm(negId);
+    return;
+  }
+  neg.etapa=novaEtapa;neg.dias=0;
+  dbUpdateNegEtapa(neg);
+  renderFunil();
+}
+function moverLead(id,dir){moverNeg(id,dir);}
 
 // ============================================================
 // PREVISIBILIDADE
@@ -1593,16 +1948,18 @@ function renderLeadsTabela(){
   if(!lista.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text-ter);font-size:13px">Nenhum lead encontrado</td></tr>';return;}
   tbody.innerHTML=lista.map(l=>{
     const cm=CM[l.corretor]||{av:'?',c:'#888',b:'#eee'};const et=ETAPAS.find(e=>e.id===l.etapa)||{label:l.etapa};
-    return`<tr>
-      <td><div style="display:flex;align-items:center;gap:8px">${avLead(l.nome,l.perfil,26)}<span style="font-weight:600">${l.nome}</span></div></td>
-      <td style="color:var(--text-sec)">${l.tel}</td>
-      <td style="color:var(--text-sec);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.email}</td>
-      <td><span class="pill ${PM[l.perfil].cls}">${PM[l.perfil].l}</span></td>
-      <td style="font-size:11px;color:var(--text-sec)">${et.label}</td>
-      <td><div style="display:flex;align-items:center;gap:5px">${av(l.corretor,20,8)}<span style="font-size:11px;color:var(--text-sec)">${l.corretor.split(' ')[0]}</span></div></td>
-      <td><span class="pill ${SM[l.status].cls}">${SM[l.status].l}</span></td>
-      <td><button class="btn btn-sm" onclick="openLeadModal(${l.id})">Editar</button> <button class="btn btn-sm btn-danger" onclick="delLead(${l.id})">Excluir</button></td>
-    </tr>`;
+    var pm2=PM[l.perfil]||PM['indef'];
+    var negCount=negociacoes.filter(function(n){return n.leadId===l.id;}).length;
+    return '<tr>'+
+      '<td><div style="display:flex;align-items:center;gap:8px">'+avLead(l.nome,l.perfil,26)+'<div><span style="font-weight:600">'+l.nome+'</span><div style="font-size:10px;color:var(--text-ter)">'+negCount+' negociação(ões)</div></div></div></td>'+
+      '<td style="color:var(--text-sec)">'+l.tel+'</td>'+
+      '<td style="color:var(--text-sec);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+l.email+'</td>'+
+      '<td><span class="pill '+pm2.cls+'">'+pm2.l+'</span></td>'+
+      '<td style="font-size:12px;color:var(--text-sec)">'+(l.cidade||'—')+'</td>'+
+      '<td><div style="display:flex;align-items:center;gap:5px">'+av(l.corretor,20,8)+'<span style="font-size:11px;color:var(--text-sec)">'+l.corretor.split(' ')[0]+'</span></div></td>'+
+      '<td style="font-size:11px;color:var(--text-sec)">'+(l.origem||'—')+'</td>'+
+      '<td><button class="btn btn-sm" onclick="openLeadModal('+l.id+')">Editar</button> <button class="btn btn-sm btn-danger" onclick="delLead('+l.id+')">Excluir</button></td>'+
+    '</tr>';
   }).join('');
 }
 function openLeadModal(id){
@@ -1614,39 +1971,29 @@ function openLeadModal(id){
   document.getElementById('l-email').value=l?l.email:'';
   document.getElementById('l-perfil').value=l?l.perfil:'mcmv';
   document.getElementById('l-corretor').value=l?l.corretor:(currentUser&&currentUser.perfil==='corretor'?currentUser.nome:'Juliano Borges');
-  const etLabel=l?(l.etapa==='nutricao'?'Funil de nutrição':(ETAPAS.find(e=>e.id===l.etapa)?.label||'Pré-atendimento')):'Pré-atendimento';
-  document.getElementById('l-etapa').value=etLabel;
-  document.getElementById('l-status').value=l?l.status:'novo';
-  document.getElementById('l-obs').value=l?l.obs:'';
-  document.getElementById('l-origem').value=l?l.origem||'':'';
-  document.getElementById('l-campanha').value=l?l.campanha||'':'';
+  var origemEl=document.getElementById('l-origem');
+  if(origemEl)origemEl.value=l?l.origem||'':'';
+  var campEl=document.getElementById('l-campanha');
+  if(campEl)campEl.value=l?l.campanha||'':'';
   document.getElementById('l-cidade').value=l?l.cidade||'Araranguá':'Araranguá';
   document.getElementById('lead-modal').classList.add('open');
 }
 function salvarLead(){
   const nome=document.getElementById('l-nome').value.trim();if(!nome)return;
-  const etLabel=document.getElementById('l-etapa').value;
-  const isNutricao=etLabel==='Funil de nutrição';
-  const et=isNutricao?{id:'nutricao'}:(ETAPAS.find(e=>e.label===etLabel)||ETAPAS[0]);
+  // Lead is just person data - no etapa needed
+  var newId=leadEditId||leadNid++;
   const obj={
-    id:leadEditId||leadNid++,nome,
+    id:newId,nome,
     tel:document.getElementById('l-tel').value.trim(),
     email:document.getElementById('l-email').value.trim(),
     perfil:document.getElementById('l-perfil').value,
     corretor:document.getElementById('l-corretor').value,
-    etapa:et.id,
-    status:isNutricao?'nutricao':document.getElementById('l-status').value,
-    obs:document.getElementById('l-obs').value.trim(),
-    dias:1,
     origem:document.getElementById('l-origem').value,
     campanha:document.getElementById('l-campanha').value.trim(),
     cidade:document.getElementById('l-cidade').value,
   };
-  if(leadEditId)leads=leads.map(l=>l.id===leadEditId?obj:l);else leads.push(obj);
-  // Auto-add to nutricao leads if etapa is nutricao
-  if(isNutricao&&!NUTR_LEADS.find(n=>n.nome===nome)){
-    NUTR_LEADS.push({nome,perfil:obj.perfil,corretor:obj.corretor});
-  }
+  if(leadEditId)leads=leads.map(function(l){return l.id===leadEditId?obj:l;});else leads.push(obj);
+  dbSaveLead(obj);
   closeModal('lead-modal');renderLeadsTabela();
 }
 function delLead(id){leads=leads.filter(l=>l.id!==id);renderLeadsTabela();}
@@ -2027,6 +2374,68 @@ function delPrevisao(id){
   renderPrevKpis();renderPrevGeralChart();renderPrevCorretorChart();renderPrevTabela();
 }
 
+
+function openNovoAtendimento(){
+  if(!document.getElementById('na-lead'))return;
+  var sel=document.getElementById('na-lead');
+  var filtrados=getAccessFilter(leads,'corretor');
+  sel.innerHTML='<option value="">Selecione um lead cadastrado...</option>'+
+    filtrados.map(function(l){
+      return '<option value="'+l.id+'">'+l.nome+' · '+(l.cidade||'—')+' · '+(PM[l.perfil]?PM[l.perfil].l:l.perfil)+'</option>';
+    }).join('');
+  document.getElementById('na-lead-info').style.display='none';
+  document.getElementById('na-obs').value='';
+  if(currentUser&&currentUser.perfil==='corretor'){
+    document.getElementById('na-corretor').value=currentUser.nome;
+  }
+  document.getElementById('novo-atend-modal').classList.add('open');
+}
+
+function preencherDadosNovoAtend(){
+  var id=parseInt(document.getElementById('na-lead').value);
+  var info=document.getElementById('na-lead-info');
+  if(!id){info.style.display='none';return;}
+  var l=leads.find(function(x){return x.id===id;});
+  if(!l){info.style.display='none';return;}
+  var pm=PM[l.perfil]||PM['indef'];
+  var negCount=negociacoes.filter(function(n){return n.leadId===id;}).length;
+  info.innerHTML=
+    '<strong>'+l.nome+'</strong>'+
+    ' · Perfil: <span class="pill '+pm.cls+'">'+pm.l+'</span>'+
+    ' · Cidade: '+(l.cidade||'—')+
+    (l.origem?' · Origem: '+l.origem:'')+
+    (l.tel?' · Tel: '+l.tel:'')+
+    '<br><span style="color:var(--brand-dark);font-size:11px">'+negCount+' negociação(ões) existente(s) para este lead</span>';
+  document.getElementById('na-corretor').value=l.corretor;
+  info.style.display='block';
+}
+
+function salvarNovoAtendimento(){
+  var leadId=parseInt(document.getElementById('na-lead-id')?document.getElementById('na-lead-id').value:0);
+  if(!leadId){alert('Use a busca para selecionar um lead.');return;}
+  var l=leads.find(function(x){return x.id===leadId;});
+  if(!l)return;
+  var obsEl=document.getElementById('na-interacao')||document.getElementById('na-obs');
+  var obs=obsEl?obsEl.value.trim():'';
+  var etapa=document.getElementById('na-etapa').value;
+  var corretor=document.getElementById('na-corretor').value;
+  var newNegId=negNid++;
+  var negNum='NEG-'+String(newNegId).padStart(3,'0');
+  var interacoes=[];
+  if(obs){
+    var now=new Date();
+    var dataFmt=now.toLocaleDateString('pt-BR')+' '+now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    interacoes.push({data:dataFmt,autor:currentUser?currentUser.nome.split(' ')[0]:'Usuário',texto:obs});
+  }
+  negociacoes.push({
+    id:newNegId,neg:negNum,leadId:leadId,
+    etapa:etapa,corretor:corretor,
+    status:'contato',obs:'',
+    interacoes:interacoes,dias:0
+  });
+  closeModal('novo-atend-modal');
+  renderFunil();
+}
 // ============================================================
 // DRAG AND DROP KANBAN
 // ============================================================
@@ -2044,17 +2453,15 @@ function onDrop(e,etapaId){
   e.preventDefault();
   e.currentTarget.style.background='';
   if(!dragLeadId)return;
-  const l=leads.find(x=>x.id===dragLeadId);
-  if(!l||l.etapa===etapaId)return;
-  const fromEtapa=l.etapa;
-  // Check if moving from proposta to fechamento — show form
+  var neg=negociacoes.find(function(x){return x.id===dragLeadId;});
+  if(!neg||neg.etapa===etapaId){dragLeadId=null;return;}
+  var fromEtapa=neg.etapa;
   if(fromEtapa==='proposta'&&etapaId==='fechamento'){
     openFechamentoForm(dragLeadId);
     dragLeadId=null;
     return;
   }
-  l.etapa=etapaId;
-  l.dias=0;
+  neg.etapa=etapaId;neg.dias=0;
   dragLeadId=null;
   renderFunil();
 }
@@ -2070,23 +2477,15 @@ let fechImovelTipo='terceiro';
 let negociosNid=50;
 let negociosFechados=[];
 // METAS DE PREVISIBILIDADE
-let metas=[
-  {id:1,corretor:'Juliano Borges',cidade:'Criciúma',valor:1000000,mes:'Abr/2026'},
-  {id:2,corretor:'Samuel Apolinário',cidade:'Criciúma',valor:900000,mes:'Abr/2026'},
-  {id:3,corretor:'Silvana Sorato',cidade:'Criciúma',valor:800000,mes:'Abr/2026'},
-  {id:4,corretor:'Fernando Corrêa',cidade:'Araranguá',valor:900000,mes:'Abr/2026'},
-  {id:5,corretor:'Bervaldo Zilli',cidade:'Araranguá',valor:700000,mes:'Abr/2026'},
-  {id:6,corretor:'Marlon Araújo',cidade:'Araranguá',valor:700000,mes:'Abr/2026'},
-  {id:7,corretor:'Joice Pereira',cidade:'Araranguá',valor:600000,mes:'Abr/2026'},
-  {id:8,corretor:'Renato Lobo',cidade:'Araranguá',valor:600000,mes:'Abr/2026'},
-];
+let metas=[];
 let metaNid=20;
 
-function openFechamentoForm(leadId){
-  fechLeadId=leadId;
-  const l=leads.find(x=>x.id===leadId);
-  if(!l)return;
-  document.getElementById('fech-lead-info').textContent='Cliente: '+l.nome+' · Corretor: '+l.corretor;
+function openFechamentoForm(negId){
+  fechLeadId=negId;
+  var neg=negociacoes.find(function(x){return x.id===negId;});
+  if(!neg)return;
+  var l=getLeadById(neg.leadId);
+  document.getElementById('fech-lead-info').textContent='Negociação: '+neg.neg+' · Cliente: '+(l.nome||'—')+' · Corretor: '+neg.corretor;
   document.getElementById('fech-tipo').value='';
   document.getElementById('fech-valor').value='';
   document.getElementById('fech-comissao-val').value='5';
@@ -2152,8 +2551,9 @@ function confirmarFechamento(){
   const comVal=parseFloat(document.getElementById('fech-comissao-val').value)||0;
   if(!tipo){alert('Selecione o tipo do imóvel.');return;}
   if(!valor){alert('Informe o valor do negócio.');return;}
-  const l=leads.find(x=>x.id===fechLeadId);
-  if(!l)return;
+  var neg=negociacoes.find(function(x){return x.id===fechLeadId;});
+  if(!neg)return;
+  var l=getLeadById(neg.leadId);
   // Calc comissao
   let comPct,comReais;
   if(fechComissaoTipo==='pct'){comPct=comVal;comReais=valor*(comVal/100);}
@@ -2161,14 +2561,16 @@ function confirmarFechamento(){
   // Save to negocios
   negociosFechados.push({
     id:negociosNid++,
-    cliente:l.nome,corretor:l.corretor,cidade:l.cidade||'—',
+    neg:neg.neg,
+    cliente:l.nome||'—',corretor:neg.corretor,cidade:l.cidade||'—',
     tipo,valor,pagamento:fechPagamento,
     comPct,comReais,nf:fechNF,imovelTipo:fechImovelTipo,
     data:new Date().toLocaleDateString('pt-BR'),
     origem:l.origem||'—',campanha:l.campanha||'—',
   });
-  // Move lead to fechamento
-  l.etapa='fechamento';l.status='convertido';l.dias=0;
+  // Move negociacao to fechamento
+  neg.etapa='fechamento';neg.status='convertido';neg.dias=0;
+  dbUpdateNegEtapa(neg);
   document.getElementById('fech-overlay').classList.remove('open');
   fechLeadId=null;
   renderFunil();
@@ -2200,7 +2602,6 @@ function renderNegocios(){
   renderNegociosKpis();
   const fc=document.getElementById('neg-f-corretor').value;
   const fci=document.getElementById('neg-f-cidade').value;
-  let base=getAccessFilter(negociosFechados,'corretor');
   if(fc)base=base.filter(n=>n.corretor===fc);
   if(fci)base=base.filter(n=>n.cidade===fci);
   if(!base.length){
@@ -2233,20 +2634,7 @@ let socialChart1=null,socialChart2=null;
 const SOCIAL_CORES={instagram:'#E4405F',facebook:'#1877F2',whatsapp:'#25D366'};
 const SOCIAL_LABELS={instagram:'Instagram',facebook:'Facebook',whatsapp:'WhatsApp'};
 
-let socialData=[
-  {id:1,rede:'instagram',periodo:'Jan/2026',seguidores:3200,alcance:8500,impressoes:22000,engajamento:420,cliques:180,leads:8},
-  {id:2,rede:'instagram',periodo:'Fev/2026',seguidores:3450,alcance:9200,impressoes:24500,engajamento:510,cliques:210,leads:11},
-  {id:3,rede:'instagram',periodo:'Mar/2026',seguidores:3820,alcance:11000,impressoes:28000,engajamento:640,cliques:290,leads:15},
-  {id:4,rede:'instagram',periodo:'Abr/2026',seguidores:4100,alcance:12500,impressoes:31000,engajamento:780,cliques:340,leads:18},
-  {id:5,rede:'facebook',periodo:'Jan/2026',seguidores:2100,alcance:5200,impressoes:14000,engajamento:210,cliques:90,leads:4},
-  {id:6,rede:'facebook',periodo:'Fev/2026',seguidores:2180,alcance:5600,impressoes:15000,engajamento:240,cliques:100,leads:5},
-  {id:7,rede:'facebook',periodo:'Mar/2026',seguidores:2290,alcance:6100,impressoes:16500,engajamento:280,cliques:120,leads:6},
-  {id:8,rede:'facebook',periodo:'Abr/2026',seguidores:2400,alcance:6800,impressoes:18000,engajamento:320,cliques:140,leads:7},
-  {id:9,rede:'whatsapp',periodo:'Jan/2026',seguidores:580,alcance:580,impressoes:3200,engajamento:480,cliques:0,leads:12},
-  {id:10,rede:'whatsapp',periodo:'Fev/2026',seguidores:620,alcance:620,impressoes:3600,engajamento:530,cliques:0,leads:14},
-  {id:11,rede:'whatsapp',periodo:'Mar/2026',seguidores:680,alcance:680,impressoes:4100,engajamento:590,cliques:0,leads:17},
-  {id:12,rede:'whatsapp',periodo:'Abr/2026',seguidores:740,alcance:740,impressoes:4500,engajamento:650,cliques:0,leads:19},
-];
+let socialData=[];
 
 function setSocialTab(tab){
   socialTab=tab;
@@ -2352,16 +2740,7 @@ const STATUS_PLANO={pendente:{l:'Pendente',cls:'pill-inativo'},andamento:{l:'Em 
 const CAT_MAP={vendas:'Vendas',marketing:'Marketing',captacao:'Captação',treinamento:'Treinamento',processos:'Processos',outros:'Outros'};
 const CAT_COR={vendas:'#9B3060',marketing:'#E4405F',captacao:'#185FA5',treinamento:'#3B6D11',processos:'#BA7517',outros:'#888780'};
 
-let acoes=[
-  {id:1,titulo:'Criar campanha Google Ads para MCMV Criciúma',desc:'Configurar campanha focada em leads MCMV para unidade Criciúma',resp:'Juliano Borges',cat:'marketing',prazo:'2026-04-15',prior:'alta',status:'andamento',prog:60},
-  {id:2,titulo:'Treinamento de objeções para equipe Araranguá',desc:'Workshop com foco em como lidar com objeções de preço e localização',resp:'José Antonio Martins',cat:'treinamento',prazo:'2026-04-20',prior:'alta',status:'pendente',prog:0},
-  {id:3,titulo:'Revisar processo de follow-up dos leads inativos',desc:'Mapear leads sem contato há mais de 30 dias e criar roteiro de reativação',resp:'Marco Martins',cat:'processos',prazo:'2026-04-30',prior:'media',status:'andamento',prog:30},
-  {id:4,titulo:'Produzir 8 reels para Instagram — Abril',desc:'Conteúdo mostrando imóveis disponíveis e depoimentos de clientes',resp:'Fernando Corrêa',cat:'marketing',prazo:'2026-04-25',prior:'media',status:'concluido',prog:100},
-  {id:5,titulo:'Meta de 15 agenciamentos — Samuel Apolinário',desc:'Prospecção ativa em bairros Jardim Maristela e Criciúma Leste',resp:'Samuel Apolinário',cat:'captacao',prazo:'2026-04-30',prior:'alta',status:'andamento',prog:45},
-  {id:6,titulo:'Atualizar materiais de apresentação dos imóveis',desc:'Fotos e vídeos atualizados de todos os imóveis em carteira',resp:'Marco Martins',cat:'vendas',prazo:'2026-05-10',prior:'media',status:'pendente',prog:0},
-  {id:7,titulo:'Capacitação em técnicas de vendas — equipe nova',desc:'Treinamento para Joice Pereira e Renato Lobo sobre processo comercial',resp:'José Antonio Martins',cat:'treinamento',prazo:'2026-05-05',prior:'alta',status:'pendente',prog:0},
-  {id:8,titulo:'Parceria com construtoras para lançamentos exclusivos',desc:'Negociar acesso antecipado a lançamentos com 3 construtoras parceiras',resp:'José Antonio Martins',cat:'captacao',prazo:'2026-05-15',prior:'media',status:'pendente',prog:0},
-];
+let acoes=[];
 
 function initPlano(){renderPlano();}
 
@@ -2491,7 +2870,7 @@ function delAcao(id){acoes=acoes.filter(a=>a.id!==id);renderPlano();}
 // ============================================================
 // INIT
 // ============================================================
-initDashboard();
+loadAllData();
 </script>
 </body>
 </html>
