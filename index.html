@@ -2318,10 +2318,17 @@ function salvarMeta(){
   var valor=parseFloat(document.getElementById('mt-valor').value);
   if(!valor){alert('Informe o valor da meta.');return;}
   var mes=document.getElementById('mt-mes').value;
-  // Remove existing meta for same corretor+cidade+mes
+  // Delete existing meta from DB and local array
+  var existing=metas.filter(function(m){
+    if(corretor)return m.corretor===corretor&&m.mes===mes;
+    return m.cidade===cidade&&!m.corretor&&m.mes===mes;
+  });
+  existing.forEach(function(m){if(m._dbId)sbDel('metas','id=eq.'+m._dbId);});
   if(corretor)metas=metas.filter(function(m){return !(m.corretor===corretor&&m.mes===mes);});
   else if(cidade)metas=metas.filter(function(m){return !(m.cidade===cidade&&!m.corretor&&m.mes===mes);});
-  metas.push({id:metaNid++,corretor:corretor,cidade:cidade,valor:valor,mes:mes});
+  var nm={id:metaNid++,corretor:corretor,cidade:cidade,valor:valor,mes:mes};
+  metas.push(nm);
+  dbSaveMeta(nm);
   closeModal('meta-modal');
   renderPrevKpis();renderPrevGeralChart();
 }
