@@ -437,12 +437,41 @@ tr:hover td{background:var(--bg-sec)}
   <div class="modal-overlay" id="novo-atend-modal">
     <div class="modal-box">
       <div class="modal-title">Novo atendimento</div>
-      <div class="fg"><label>Lead vinculado</label>
-        <select id="na-lead" onchange="preencherDadosNovoAtend()">
-          <option value="">Selecione um lead cadastrado...</option>
-        </select>
+      <div class="fg">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <label style="margin-bottom:0">Buscar lead</label>
+          <button class="btn btn-sm" onclick="toggleNovoLeadInline()" id="btn-novo-lead-inline" style="font-size:11px;padding:4px 10px">+ Cadastrar novo lead</button>
+        </div>
+        <input type="text" id="na-busca" placeholder="Digite nome, telefone ou cidade..." oninput="buscarLeadNovoAtend()" autocomplete="off"
+          style="font-size:13px;padding:8px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg-sec);color:var(--text);width:100%;outline:none">
       </div>
-      <div id="na-lead-info" style="display:none;background:var(--bg-sec);border-radius:var(--r);padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--text-sec)"></div>
+      <div id="na-resultados" style="display:none;max-height:180px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r);margin-top:-8px;margin-bottom:10px;background:var(--bg-card)"></div>
+      <div id="na-lead-selecionado" style="display:none;background:var(--brand-light);border-radius:var(--r);padding:10px 12px;margin-bottom:10px;font-size:12px;color:var(--brand-dark)"></div>
+      <input type="hidden" id="na-lead-id" value="">
+
+      <!-- Inline lead form -->
+      <div id="na-novo-lead-form" style="display:none;border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px;background:var(--bg-sec)">
+        <div style="font-size:12px;font-weight:600;color:var(--text-sec);margin-bottom:10px;text-transform:uppercase;letter-spacing:.3px">Novo lead</div>
+        <div class="fg-row">
+          <div class="fg"><label>Nome *</label><input type="text" id="na-l-nome" placeholder="Nome completo"></div>
+          <div class="fg"><label>Telefone</label><input type="text" id="na-l-tel" placeholder="(48) 9xxxx-xxxx"></div>
+        </div>
+        <div class="fg-row">
+          <div class="fg"><label>Perfil</label>
+            <select id="na-l-perfil"><option value="mcmv">MCMV</option><option value="medio">Médio padrão</option><option value="alto">Alto padrão</option><option value="indef">Indefinido</option></select>
+          </div>
+          <div class="fg"><label>Cidade</label>
+            <select id="na-l-cidade"><option>Araranguá</option><option>Criciúma</option></select>
+          </div>
+        </div>
+        <div class="fg-row">
+          <div class="fg"><label>Origem</label>
+            <select id="na-l-origem"><option value="">Selecione...</option><option>Google Ads</option><option>Meta Ads</option><option>Instagram</option><option>Portal</option><option>Indicação</option><option>Outro</option></select>
+          </div>
+          <div class="fg"><label>E-mail</label><input type="text" id="na-l-email" placeholder="email@exemplo.com"></div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;font-size:12px" onclick="salvarNovoLeadInline()">Salvar lead e continuar</button>
+      </div>
       <div class="fg-row">
         <div class="fg"><label>Etapa inicial</label>
           <select id="na-etapa">
@@ -1079,59 +1108,7 @@ tr:hover td{background:var(--bg-sec)}
         <input type="number" id="fech-comissao-val" placeholder="5" value="5" step="0.1" oninput="calcFechComissao()" style="flex:1">
         <span id="fech-comissao-unidade" style="font-size:13px;color:var(--text-sec);white-space:nowrap">% sobre o valor</span>
       </div>
-      <div class="comissao-result" id="fech-comissao-result"></div>
-    </div>
-    <div class="fg"><label>Tem nota fiscal?</label>
-      <div class="toggle-group">
-        <button class="toggle-opt active" id="fech-nf-sim-btn" onclick="setFechToggle('nf','sim')">Sim</button>
-        <button class="toggle-opt" id="fech-nf-nao-btn" onclick="setFechToggle('nf','nao')">Não</button>
-      </div>
-      <input type="hidden" id="fech-nf" value="sim">
-    </div>
-    <div class="fg"><label>Imóvel é de terceiro ou construtora?</label>
-      <div class="toggle-group">
-        <button class="toggle-opt active" id="fech-imovel-terc-btn" onclick="setFechToggle('imovel','terceiro')">Terceiro</button>
-        <button class="toggle-opt" id="fech-imovel-const-btn" onclick="setFechToggle('imovel','construtora')">Construtora</button>
-      </div>
-      <input type="hidden" id="fech-imovel-tipo" value="terceiro">
-    </div>
-    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px">
-      <button class="btn" onclick="cancelarFechamento()">Cancelar — manter em Proposta</button>
-      <button class="btn btn-primary" onclick="confirmarFechamento()">Confirmar fechamento</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===== NEGÓCIOS FECHADOS ===== -->
-<div class="page" id="page-negocios">
-  <div class="top-bar">
-    <div><div class="page-title">Negócios fechados</div><div class="page-sub">Registro completo dos fechamentos da equipe</div></div>
-    <div class="top-actions">
-      <select class="sel" id="neg-f-corretor" onchange="renderNegocios()"><option value="">Todos os corretores</option>
-        <option>Juliano Borges</option><option>Samuel Apolinário</option><option>Silvana Sorato</option>
-        <option>Fernando Corrêa</option><option>Bervaldo Zilli</option><option>Marlon Araújo</option>
-        <option>Joice Pereira</option><option>Renato Lobo</option>
-      </select>
-      <select class="sel" id="neg-f-cidade" onchange="renderNegocios()"><option value="">Todas as cidades</option><option>Araranguá</option><option>Criciúma</option></select>
-    </div>
-  </div>
-  <div class="kpi-grid" id="neg-kpis"></div>
-  <div class="card">
-    <div class="table-wrap">
-      <table>
-        <thead><tr>
-          <th>Cliente</th><th>Corretor</th><th>Tipo</th><th>Valor</th>
-          <th>Pagamento</th><th>Comissão</th><th>Nota fiscal</th><th>Imóvel</th><th>Data</th>
-        </tr></thead>
-        <tbody id="neg-tbody"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-</main>
-
-<script>
+      <div class="comissao-r
 
 // ============================================================
 // SUPABASE
@@ -1702,6 +1679,51 @@ function salvarInteracao(){
   renderFunil();
 }
 
+
+function toggleNovoLeadInline(){
+  var form=document.getElementById('na-novo-lead-form');
+  var btn=document.getElementById('btn-novo-lead-inline');
+  var busca=document.getElementById('na-busca');
+  var open=form.style.display==='none';
+  form.style.display=open?'block':'none';
+  btn.textContent=open?'✕ Cancelar':'+ Cadastrar novo lead';
+  if(open){
+    document.getElementById('na-l-nome').value='';
+    document.getElementById('na-l-tel').value='';
+    document.getElementById('na-l-email').value='';
+    // Pre-fill search term as name if typed
+    if(busca&&busca.value.trim())document.getElementById('na-l-nome').value=busca.value.trim();
+    document.getElementById('na-l-nome').focus();
+  }
+}
+
+async function salvarNovoLeadInline(){
+  var nome=document.getElementById('na-l-nome').value.trim();
+  if(!nome){alert('Informe o nome do lead.');return;}
+  var newLead={
+    id:leadNid++,nome:nome,
+    tel:document.getElementById('na-l-tel').value.trim(),
+    email:document.getElementById('na-l-email').value.trim(),
+    perfil:document.getElementById('na-l-perfil').value,
+    corretor:document.getElementById('na-corretor').value||'',
+    cidade:document.getElementById('na-l-cidade').value,
+    origem:document.getElementById('na-l-origem').value,
+    campanha:''
+  };
+  leads.push(newLead);
+  await dbSaveLead(newLead);
+  // Select this lead automatically
+  document.getElementById('na-lead-id').value=newLead.id;
+  document.getElementById('na-busca').value=newLead.nome;
+  var pm=PM[newLead.perfil]||PM['indef'];
+  var sel=document.getElementById('na-lead-selecionado');
+  sel.innerHTML='<strong>'+newLead.nome+'</strong> · <span class="pill '+pm.cls+'">'+pm.l+'</span> · '+newLead.cidade+(newLead.tel?' · '+newLead.tel:'')+'<br><span style="font-size:11px;color:var(--brand-dark)">Lead criado agora</span>';
+  sel.style.display='block';
+  // Close inline form
+  document.getElementById('na-novo-lead-form').style.display='none';
+  document.getElementById('btn-novo-lead-inline').textContent='+ Cadastrar novo lead';
+  document.getElementById('na-resultados').style.display='none';
+}
 function openNovoAtendimento(){
   if(!document.getElementById('na-busca'))return;
   document.getElementById('na-busca').value='';
@@ -1709,6 +1731,8 @@ function openNovoAtendimento(){
   document.getElementById('na-resultados').innerHTML='';
   document.getElementById('na-lead-selecionado').style.display='none';
   document.getElementById('na-lead-id').value='';
+  document.getElementById('na-novo-lead-form').style.display='none';
+  document.getElementById('btn-novo-lead-inline').textContent='+ Cadastrar novo lead';
   var obs=document.getElementById('na-interacao');
   if(obs)obs.value='';
   var corrEl=document.getElementById('na-corretor');
@@ -2382,6 +2406,51 @@ function delPrevisao(id){
 }
 
 
+
+function toggleNovoLeadInline(){
+  var form=document.getElementById('na-novo-lead-form');
+  var btn=document.getElementById('btn-novo-lead-inline');
+  var busca=document.getElementById('na-busca');
+  var open=form.style.display==='none';
+  form.style.display=open?'block':'none';
+  btn.textContent=open?'✕ Cancelar':'+ Cadastrar novo lead';
+  if(open){
+    document.getElementById('na-l-nome').value='';
+    document.getElementById('na-l-tel').value='';
+    document.getElementById('na-l-email').value='';
+    // Pre-fill search term as name if typed
+    if(busca&&busca.value.trim())document.getElementById('na-l-nome').value=busca.value.trim();
+    document.getElementById('na-l-nome').focus();
+  }
+}
+
+async function salvarNovoLeadInline(){
+  var nome=document.getElementById('na-l-nome').value.trim();
+  if(!nome){alert('Informe o nome do lead.');return;}
+  var newLead={
+    id:leadNid++,nome:nome,
+    tel:document.getElementById('na-l-tel').value.trim(),
+    email:document.getElementById('na-l-email').value.trim(),
+    perfil:document.getElementById('na-l-perfil').value,
+    corretor:document.getElementById('na-corretor').value||'',
+    cidade:document.getElementById('na-l-cidade').value,
+    origem:document.getElementById('na-l-origem').value,
+    campanha:''
+  };
+  leads.push(newLead);
+  await dbSaveLead(newLead);
+  // Select this lead automatically
+  document.getElementById('na-lead-id').value=newLead.id;
+  document.getElementById('na-busca').value=newLead.nome;
+  var pm=PM[newLead.perfil]||PM['indef'];
+  var sel=document.getElementById('na-lead-selecionado');
+  sel.innerHTML='<strong>'+newLead.nome+'</strong> · <span class="pill '+pm.cls+'">'+pm.l+'</span> · '+newLead.cidade+(newLead.tel?' · '+newLead.tel:'')+'<br><span style="font-size:11px;color:var(--brand-dark)">Lead criado agora</span>';
+  sel.style.display='block';
+  // Close inline form
+  document.getElementById('na-novo-lead-form').style.display='none';
+  document.getElementById('btn-novo-lead-inline').textContent='+ Cadastrar novo lead';
+  document.getElementById('na-resultados').style.display='none';
+}
 function openNovoAtendimento(){
   if(!document.getElementById('na-lead'))return;
   var sel=document.getElementById('na-lead');
@@ -2836,6 +2905,49 @@ function renderPlano(){
       <td style="font-size:12px">${a.resp}</td>
       <td><span style="font-size:10px;padding:2px 7px;border-radius:8px;background:${cc}18;color:${cc};font-weight:600">${CAT_MAP[a.cat]}</span></td>
       <td style="color:var(--text-sec);font-size:12px">${a.prazo?a.prazo.split('-').reverse().join('/'):'—'}</td>
+      <td><span class="pill ${pm.cls}">${pm.l}</span></td>
+      <td><span class="pill ${sp.cls}">${sp.l}</span></td>
+      <td style="min-width:100px">
+        <div style="height:6px;background:var(--bg-sec);border-radius:3px"><div style="height:6px;border-radius:3px;background:${a.status==='concluido'?'#3B6D11':'#9B3060'};width:${a.prog}%"></div></div>
+        <div style="font-size:10px;color:var(--text-ter);margin-top:2px">${a.prog}%</div>
+      </td>
+      <td>
+        <button class="btn btn-sm" onclick="openPlanoModal(${a.id})">Editar</button>
+        <button class="btn btn-sm btn-danger" onclick="delAcao(${a.id})">Excluir</button>
+      </td>
+    </tr>`;
+  }).join(''):'<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text-ter)">Nenhuma ação encontrada</td></tr>';
+}
+
+function openPlanoModal(id){
+  planoEditId=id||null;
+  document.getElementById('plano-modal-title').textContent=id?'Editar ação':'Nova ação';
+  const a=id?acoes.find(x=>x.id===id):null;
+  document.getElementById('pl-titulo').value=a?a.titulo:'';
+  document.getElementById('pl-desc').value=a?a.desc:'';
+  document.getElementById('pl-resp').value=a?a.resp:'José Antonio Martins';
+  document.getElementById('pl-cat').value=a?a.cat:'vendas';
+  document.getElementById('pl-prazo').value=a?a.prazo:'';
+  document.getElementById('pl-prior').value=a?a.prior:'media';
+  document.getElementById('pl-status').value=a?a.status:'pendente';
+  document.getElementById('pl-prog').value=a?a.prog:0;
+  document.getElementById('plano-modal').classList.add('open');
+}
+
+function salvarPlano(){
+  const titulo=document.getElementById('pl-titulo').value.trim();if(!titulo)return;
+  const obj={id:planoEditId||planoNid++,titulo,desc:document.getElementById('pl-desc').value.trim(),resp:document.getElementById('pl-resp').value,cat:document.getElementById('pl-cat').value,prazo:document.getElementById('pl-prazo').value,prior:document.getElementById('pl-prior').value,status:document.getElementById('pl-status').value,prog:parseInt(document.getElementById('pl-prog').value)||0};
+  if(planoEditId)acoes=acoes.map(a=>a.id===planoEditId?obj:a);else acoes.push(obj);
+  closeModal('plano-modal');renderPlano();
+}
+
+function delAcao(id){acoes=acoes.filter(a=>a.id!==id);renderPlano();}
+
+// ============================================================
+// INIT
+// ============================================================
+loadAllData();
+e:12px">${a.prazo?a.prazo.split('-').reverse().join('/'):'—'}</td>
       <td><span class="pill ${pm.cls}">${pm.l}</span></td>
       <td><span class="pill ${sp.cls}">${sp.l}</span></td>
       <td style="min-width:100px">
