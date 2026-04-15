@@ -1174,7 +1174,8 @@ async function dbDeleteLead(id){await sbDel('leads','id=eq.'+id);}
 async function dbSaveNeg(n){
   showLoading('Salvando negociação...');
   try{
-    var d={neg:n.neg,lead_id:n.leadId,etapa:n.etapa,corretor:n.corretor,status:n.status,obs:n.obs||'',dias:n.dias||0};
+    var lid=n.lead&&n.lead._dbId?n.lead._dbId:(n.leadId);
+    var d={neg:n.neg,lead_id:lid,etapa:n.etapa,corretor:n.corretor,status:n.status,obs:n.obs||'',dias:n.dias||0};
     var r=n._dbId?await sbUpd('negociacoes',d,'id=eq.'+n._dbId):await sbIns('negociacoes',[d]);
     if(r&&r[0]&&!n._dbId){n._dbId=r[0].id;n.id=r[0].id;}
   }catch(e){console.error('dbSaveNeg error:',e);}
@@ -2445,11 +2446,14 @@ function preencherDadosNovoAtend(){
   info.style.display='block';
 }
 
-function salvarNovoAtendimento(){
+async function salvarNovoAtendimento(){
   var leadId=parseInt(document.getElementById('na-lead-id')?document.getElementById('na-lead-id').value:0);
   if(!leadId){alert('Use a busca para selecionar um lead.');return;}
   var l=leads.find(function(x){return x.id===leadId;});
   if(!l)return;
+  // If lead not yet in DB (inline created), save it first
+  if(!l._dbId){await dbSaveLead(l);}
+  var finalLeadId2=l._dbId||l.id;
   var obsEl=document.getElementById('na-interacao')||document.getElementById('na-obs');
   var obs=obsEl?obsEl.value.trim():'';
   var etapa=document.getElementById('na-etapa').value;
@@ -2462,7 +2466,7 @@ function salvarNovoAtendimento(){
     var dataFmt=now.toLocaleDateString('pt-BR')+' '+now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
     interacoes.push({data:dataFmt,autor:currentUser?currentUser.nome.split(' ')[0]:'Usuário',texto:obs});
   }
-  var newNeg={id:newNegId,neg:negNum,leadId:leadId,etapa:etapa,corretor:corretor,status:'contato',obs:'',interacoes:interacoes,dias:0};
+  var newNeg={id:newNegId,neg:negNum,leadId:finalLeadId2,etapa:etapa,corretor:corretor,status:'contato',obs:'',interacoes:interacoes,dias:0};
   negociacoes.push(newNeg);
   dbSaveNeg(newNeg).then(function(){
     if(newNeg._dbId&&interacoes.length>0)dbSaveInteracao(newNeg._dbId,interacoes[0]);
@@ -2496,6 +2500,7 @@ function onDrop(e,etapaId){
     return;
   }
   neg.etapa=etapaId;neg.dias=0;
+  dbUpdateNegEtapa(neg);
   dragLeadId=null;
   renderFunil();
 }
