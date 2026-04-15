@@ -1174,11 +1174,14 @@ async function dbDeleteLead(id){await sbDel('leads','id=eq.'+id);}
 async function dbSaveNeg(n){
   showLoading('Salvando negociação...');
   try{
-    var lid=n.lead&&n.lead._dbId?n.lead._dbId:(n.leadId);
+    var lid=n.leadId;
     var d={neg:n.neg,lead_id:lid,etapa:n.etapa,corretor:n.corretor,status:n.status,obs:n.obs||'',dias:n.dias||0};
+    console.log('[dbSaveNeg] Enviando para Supabase:', JSON.stringify(d));
     var r=n._dbId?await sbUpd('negociacoes',d,'id=eq.'+n._dbId):await sbIns('negociacoes',[d]);
+    console.log('[dbSaveNeg] Resposta:', JSON.stringify(r));
     if(r&&r[0]&&!n._dbId){n._dbId=r[0].id;n.id=r[0].id;}
-  }catch(e){console.error('dbSaveNeg error:',e);}
+    console.log('[dbSaveNeg] _dbId final:', n._dbId);
+  }catch(e){console.error('[dbSaveNeg] ERRO:',e);}
   finally{hideLoading();}
   return n._dbId;
 }
@@ -2467,8 +2470,10 @@ async function salvarNovoAtendimento(){
     interacoes.push({data:dataFmt,autor:currentUser?currentUser.nome.split(' ')[0]:'Usuário',texto:obs});
   }
   var newNeg={id:newNegId,neg:negNum,leadId:finalLeadId2,etapa:etapa,corretor:corretor,status:'contato',obs:'',interacoes:interacoes,dias:0};
+  console.log('[salvarNovoAtendimento] lead._dbId='+l._dbId+' leadId='+finalLeadId2+' negNum='+negNum);
   negociacoes.push(newNeg);
   dbSaveNeg(newNeg).then(function(){
+    console.log('[salvarNovoAtendimento] neg salvo, _dbId='+newNeg._dbId);
     if(newNeg._dbId&&interacoes.length>0)dbSaveInteracao(newNeg._dbId,interacoes[0]);
   });
   closeModal('novo-atend-modal');
