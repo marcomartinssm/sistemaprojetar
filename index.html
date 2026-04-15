@@ -532,81 +532,6 @@ tr:hover td{background:var(--bg-sec)}
   </div>
 
   <!-- NOVO ATENDIMENTO MODAL -->
-  <div class="modal-overlay" id="novo-atend-modal">
-    <div class="modal-box">
-      <div class="modal-title">Novo atendimento</div>
-      <div class="fg"><label>Lead vinculado</label>
-        <select id="na-lead" onchange="previewNovoAtend()">
-          <option value="">Selecione um lead...</option>
-        </select>
-      </div>
-      <div id="na-lead-preview" style="display:none;background:var(--bg-sec);border-radius:var(--r);padding:10px 12px;margin-bottom:10px;font-size:12px;color:var(--text-sec)"></div>
-      <div class="fg"><label>Etapa inicial</label>
-        <select id="na-etapa">
-          <option value="pre">Pré-atendimento</option>
-          <option value="atend" selected>Atendimento</option>
-          <option value="agend">Ag. de visita</option>
-          <option value="visita">Visita</option>
-          <option value="proposta">Proposta</option>
-        </select>
-      </div>
-      <div class="fg"><label>Primeira interação</label>
-        <textarea id="na-interacao" rows="3" style="font-size:13px;padding:8px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg-sec);color:var(--text);resize:none;width:100%" placeholder="Descreva o primeiro contato ou atendimento..."></textarea>
-      </div>
-      <div class="modal-footer">
-        <button class="btn" onclick="closeModal('novo-atend-modal')">Cancelar</button>
-        <button class="btn btn-primary" onclick="salvarNovoAtendimento()">Criar atendimento</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ===== PREVISIBILIDADE ===== -->
-<div class="page" id="page-previsibilidade">
-  <div class="top-bar">
-    <div><div class="page-title">Previsibilidade de vendas</div><div class="page-sub">Baseada nos atendimentos ativos do funil</div></div>
-    <div class="top-actions">
-      <select class="sel" id="prev-f-cidade" onchange="renderPrevKpis();renderPrevGeralChart();renderPrevCorretorChart();renderPrevTabela()">
-        <option value="">Todas as cidades</option><option>Araranguá</option><option>Criciúma</option>
-      </select>
-      <select class="sel" id="prev-f-corretor2" onchange="renderPrevKpis();renderPrevGeralChart();renderPrevCorretorChart();renderPrevTabela()">
-        <option value="">Todos os corretores</option>
-        <option>Juliano Borges</option><option>Samuel Apolinário</option><option>Silvana Sorato</option>
-        <option>Fernando Corrêa</option><option>Bervaldo Zilli</option><option>Marlon Araújo</option>
-        <option>Joice Pereira</option><option>Renato Lobo</option>
-      </select>
-      <button class="btn" onclick="openMetaModal()">+ Definir meta</button>
-      <button class="btn btn-primary" onclick="openPrevModal()">+ Adicionar previsibilidade</button>
-    </div>
-  </div>
-  <div class="kpi-grid" id="prev-kpis"></div>
-  <div class="grid2">
-    <div class="card">
-      <div class="card-hdr"><div class="card-title">Projeção x realizado por mês</div></div>
-      <div class="chart-wrap" style="height:240px"><canvas id="prev-geral"></canvas></div>
-    </div>
-    <div class="card">
-      <div class="card-hdr">
-        <div class="card-title">Evolução por corretor</div>
-        <select class="sel" id="prev-sel" onchange="renderPrevCorretorChart()">
-          <option>Juliano Borges</option><option>Samuel Apolinário</option><option>Silvana Sorato</option><option>Fernando Corrêa</option><option>Bervaldo Zilli</option><option>Marlon Araújo</option><option>Joice Pereira</option><option>Renato Lobo</option>
-        </select>
-      </div>
-      <div class="chart-wrap" style="height:240px"><canvas id="prev-corretor"></canvas></div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-hdr">
-      <div class="card-title">Negócios previstos</div>
-      <select class="sel" id="prev-tabela-sel" onchange="renderPrevTabela()">
-        <option value="">Todos os corretores</option>
-        <option>Juliano Borges</option><option>Samuel Apolinário</option><option>Silvana Sorato</option><option>Fernando Corrêa</option><option>Bervaldo Zilli</option><option>Marlon Araújo</option><option>Joice Pereira</option><option>Renato Lobo</option>
-      </select>
-    </div>
-    <div class="table-wrap"><table><thead><tr><th>Corretor</th><th>Cliente</th><th>Imóvel</th><th>Valor</th><th>Prev. fechamento</th><th>Status</th></tr></thead><tbody id="prev-tbody"></tbody></table></div>
-  </div>
-</div>
-
 
   <!-- META MODAL -->
   <div class="modal-overlay" id="meta-modal">
@@ -686,6 +611,7 @@ tr:hover td{background:var(--bg-sec)}
       </div>
     </div>
   </div>
+</div>
 
 <!-- ===== LEADS ===== -->
 <div class="page" id="page-leads">
@@ -1108,8 +1034,103 @@ tr:hover td{background:var(--bg-sec)}
         <input type="number" id="fech-comissao-val" placeholder="5" value="5" step="0.1" oninput="calcFechComissao()" style="flex:1">
         <span id="fech-comissao-unidade" style="font-size:13px;color:var(--text-sec);white-space:nowrap">% sobre o valor</span>
       </div>
-      <div class="comissao-r
+      <div class="comissao-result" id="fech-comissao-result"></div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px">
+      <button class="btn" onclick="cancelarFechamento()">Cancelar — manter em Proposta</button>
+      <button class="btn btn-primary" onclick="confirmarFechamento()">Confirmar fechamento</button>
+    </div>
+  </div>
+</div>
 
+
+<!-- ===== PREVISIBILIDADE ===== -->
+<div class="page" id="page-previsibilidade">
+  <div class="top-bar">
+    <div><div class="page-title">Previsibilidade de vendas</div><div class="page-sub">Baseada nos atendimentos ativos do funil</div></div>
+    <div class="top-actions">
+      <select class="sel" id="prev-f-cidade" onchange="renderPrevKpis();renderPrevGeralChart();renderPrevCorretorChart();renderPrevTabela()">
+        <option value="">Todas as cidades</option><option>Araranguá</option><option>Criciúma</option>
+      </select>
+      <select class="sel" id="prev-f-corretor2" onchange="renderPrevKpis();renderPrevGeralChart();renderPrevCorretorChart();renderPrevTabela()">
+        <option value="">Todos os corretores</option>
+        <option>Juliano Borges</option><option>Samuel Apolinário</option><option>Silvana Sorato</option>
+        <option>Fernando Corrêa</option><option>Bervaldo Zilli</option><option>Marlon Araújo</option>
+        <option>Joice Pereira</option><option>Renato Lobo</option>
+      </select>
+      <button class="btn" onclick="openMetaModal()">+ Definir meta</button>
+      <button class="btn btn-primary" onclick="openPrevModal()">+ Adicionar previsibilidade</button>
+    </div>
+  </div>
+  <div class="kpi-grid" id="prev-kpis"></div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">Projeção x meta por mês</div></div>
+      <div class="chart-wrap" style="height:240px"><canvas id="prev-geral"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-hdr">
+        <div class="card-title">Evolução por corretor</div>
+      </div>
+      <div class="chart-wrap" style="height:240px"><canvas id="prev-corretor"></canvas></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-title">Pipeline de negociações</div>
+      <div style="display:flex;gap:8px">
+        <select class="sel" id="prev-tabela-sel" onchange="renderPrevTabela()">
+          <option value="">Todos os corretores</option>
+          <option>Juliano Borges</option><option>Samuel Apolinário</option><option>Silvana Sorato</option>
+          <option>Fernando Corrêa</option><option>Bervaldo Zilli</option><option>Marlon Araújo</option>
+          <option>Joice Pereira</option><option>Renato Lobo</option>
+        </select>
+        <select class="sel" id="prev-tabela-mes" onchange="renderPrevTabela()">
+          <option value="">Todos os meses</option>
+          <option>Abr/2026</option><option>Mai/2026</option><option>Jun/2026</option>
+          <option>Jul/2026</option><option>Ago/2026</option>
+        </select>
+      </div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Corretor</th><th>Cliente</th><th>Imóvel</th><th>Valor</th><th>Previsão</th><th>Etapa</th><th>Ação</th></tr></thead>
+      <tbody id="prev-tbody"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ===== NEGÓCIOS FECHADOS ===== -->
+<div class="page" id="page-negocios">
+  <div class="top-bar">
+    <div><div class="page-title">Negócios fechados</div><div class="page-sub">Registro completo dos fechamentos da equipe</div></div>
+    <div class="top-actions">
+      <select class="sel" id="neg-f-corretor" onchange="renderNegocios()">
+        <option value="">Todos os corretores</option>
+        <option>Juliano Borges</option><option>Samuel Apolinário</option><option>Silvana Sorato</option>
+        <option>Fernando Corrêa</option><option>Bervaldo Zilli</option><option>Marlon Araújo</option>
+        <option>Joice Pereira</option><option>Renato Lobo</option>
+      </select>
+      <select class="sel" id="neg-f-cidade" onchange="renderNegocios()">
+        <option value="">Todas as cidades</option><option>Araranguá</option><option>Criciúma</option>
+      </select>
+    </div>
+  </div>
+  <div class="kpi-grid" id="neg-kpis"></div>
+  <div class="card">
+    <div class="table-wrap"><table>
+      <thead><tr>
+        <th>Cliente</th><th>Corretor</th><th>Tipo</th><th>Valor</th>
+        <th>Pagamento</th><th>Comissão</th><th>Nota fiscal</th><th>Imóvel</th><th>Data</th>
+      </tr></thead>
+      <tbody id="neg-tbody"></tbody>
+    </table></div>
+  </div>
+</div>
+
+</main>
+
+<script>
 // ============================================================
 // SUPABASE
 // ============================================================
@@ -1141,19 +1162,23 @@ function hideLoading(){var el=document.getElementById('sb-toast');if(el){setTime
 // ── DB save helpers ───────────────────────────────────────────────────────────
 async function dbSaveLead(l){
   showLoading('Salvando lead...');
-  var d={nome:l.nome,tel:l.tel,email:l.email,perfil:l.perfil,corretor:l.corretor,cidade:l.cidade,origem:l.origem,campanha:l.campanha};
-  var r=l._dbId?await sbUpd('leads',d,'id=eq.'+l._dbId):await sbIns('leads',[d]);
-  if(r&&r[0]&&!l._dbId)l._dbId=r[0].id;
-  hideLoading();
+  try{
+    var d={nome:l.nome,tel:l.tel,email:l.email,perfil:l.perfil,corretor:l.corretor,cidade:l.cidade,origem:l.origem,campanha:l.campanha};
+    var r=l._dbId?await sbUpd('leads',d,'id=eq.'+l._dbId):await sbIns('leads',[d]);
+    if(r&&r[0]&&!l._dbId){l._dbId=r[0].id;l.id=r[0].id;}
+  }catch(e){console.error('dbSaveLead error:',e);}
+  finally{hideLoading();}
 }
 async function dbDeleteLead(id){await sbDel('leads','id=eq.'+id);}
 
 async function dbSaveNeg(n){
   showLoading('Salvando negociação...');
-  var d={neg:n.neg,lead_id:n.leadId,etapa:n.etapa,corretor:n.corretor,status:n.status,obs:n.obs||'',dias:n.dias||0};
-  var r=n._dbId?await sbUpd('negociacoes',d,'id=eq.'+n._dbId):await sbIns('negociacoes',[d]);
-  if(r&&r[0]&&!n._dbId)n._dbId=r[0].id;
-  hideLoading();
+  try{
+    var d={neg:n.neg,lead_id:n.leadId,etapa:n.etapa,corretor:n.corretor,status:n.status,obs:n.obs||'',dias:n.dias||0};
+    var r=n._dbId?await sbUpd('negociacoes',d,'id=eq.'+n._dbId):await sbIns('negociacoes',[d]);
+    if(r&&r[0]&&!n._dbId){n._dbId=r[0].id;n.id=r[0].id;}
+  }catch(e){console.error('dbSaveNeg error:',e);}
+  finally{hideLoading();}
   return n._dbId;
 }
 async function dbUpdateNegEtapa(n){
@@ -1169,10 +1194,12 @@ async function dbSaveInteracao(negDbId,it){
 
 async function dbSaveFechado(nf){
   showLoading('Registrando fechamento...');
-  var d={neg:nf.neg,lead_id:nf.leadId||null,neg_id:nf._negDbId||null,cliente:nf.cliente,corretor:nf.corretor,cidade:nf.cidade,tipo_imovel:nf.tipo,valor:nf.valor,pagamento:nf.pagamento,com_pct:nf.comPct,com_reais:nf.comReais,nota_fiscal:nf.nf,imovel_tipo:nf.imovelTipo,data_fechamento:nf.data};
-  var r=await sbIns('negocios_fechados',[d]);
-  if(r&&r[0])nf._dbId=r[0].id;
-  hideLoading();
+  try{
+    var d={neg:nf.neg,lead_id:nf.leadId||null,neg_id:nf._negDbId||null,cliente:nf.cliente,corretor:nf.corretor,cidade:nf.cidade,tipo_imovel:nf.tipo,valor:nf.valor,pagamento:nf.pagamento,com_pct:nf.comPct,com_reais:nf.comReais,nota_fiscal:nf.nf,imovel_tipo:nf.imovelTipo,data_fechamento:nf.data};
+    var r=await sbIns('negocios_fechados',[d]);
+    if(r&&r[0])nf._dbId=r[0].id;
+  }catch(e){console.error('dbSaveFechado error:',e);}
+  finally{hideLoading();}
 }
 
 async function dbSaveMeta(m){
@@ -1680,66 +1707,6 @@ function salvarInteracao(){
 }
 
 
-function toggleNovoLeadInline(){
-  var form=document.getElementById('na-novo-lead-form');
-  var btn=document.getElementById('btn-novo-lead-inline');
-  var busca=document.getElementById('na-busca');
-  var open=form.style.display==='none';
-  form.style.display=open?'block':'none';
-  btn.textContent=open?'✕ Cancelar':'+ Cadastrar novo lead';
-  if(open){
-    document.getElementById('na-l-nome').value='';
-    document.getElementById('na-l-tel').value='';
-    document.getElementById('na-l-email').value='';
-    // Pre-fill search term as name if typed
-    if(busca&&busca.value.trim())document.getElementById('na-l-nome').value=busca.value.trim();
-    document.getElementById('na-l-nome').focus();
-  }
-}
-
-async function salvarNovoLeadInline(){
-  var nome=document.getElementById('na-l-nome').value.trim();
-  if(!nome){alert('Informe o nome do lead.');return;}
-  var newLead={
-    id:leadNid++,nome:nome,
-    tel:document.getElementById('na-l-tel').value.trim(),
-    email:document.getElementById('na-l-email').value.trim(),
-    perfil:document.getElementById('na-l-perfil').value,
-    corretor:document.getElementById('na-corretor').value||'',
-    cidade:document.getElementById('na-l-cidade').value,
-    origem:document.getElementById('na-l-origem').value,
-    campanha:''
-  };
-  leads.push(newLead);
-  await dbSaveLead(newLead);
-  // Select this lead automatically
-  document.getElementById('na-lead-id').value=newLead.id;
-  document.getElementById('na-busca').value=newLead.nome;
-  var pm=PM[newLead.perfil]||PM['indef'];
-  var sel=document.getElementById('na-lead-selecionado');
-  sel.innerHTML='<strong>'+newLead.nome+'</strong> · <span class="pill '+pm.cls+'">'+pm.l+'</span> · '+newLead.cidade+(newLead.tel?' · '+newLead.tel:'')+'<br><span style="font-size:11px;color:var(--brand-dark)">Lead criado agora</span>';
-  sel.style.display='block';
-  // Close inline form
-  document.getElementById('na-novo-lead-form').style.display='none';
-  document.getElementById('btn-novo-lead-inline').textContent='+ Cadastrar novo lead';
-  document.getElementById('na-resultados').style.display='none';
-}
-function openNovoAtendimento(){
-  if(!document.getElementById('na-busca'))return;
-  document.getElementById('na-busca').value='';
-  document.getElementById('na-resultados').style.display='none';
-  document.getElementById('na-resultados').innerHTML='';
-  document.getElementById('na-lead-selecionado').style.display='none';
-  document.getElementById('na-lead-id').value='';
-  document.getElementById('na-novo-lead-form').style.display='none';
-  document.getElementById('btn-novo-lead-inline').textContent='+ Cadastrar novo lead';
-  var obs=document.getElementById('na-interacao');
-  if(obs)obs.value='';
-  var corrEl=document.getElementById('na-corretor');
-  if(currentUser&&currentUser.perfil==='corretor'&&corrEl)corrEl.value=currentUser.nome;
-  document.getElementById('novo-atend-modal').classList.add('open');
-  setTimeout(function(){var b=document.getElementById('na-busca');if(b)b.focus();},100);
-}
 function buscarLeadNovoAtend(){
   var termo=document.getElementById('na-busca').value.toLowerCase().trim();
   var res=document.getElementById('na-resultados');
@@ -1776,24 +1743,6 @@ function selecionarLeadAtend(leadId){
   sel.style.display='block';
   var corrEl=document.getElementById('na-corretor');
   if(corrEl)corrEl.value=l.corretor;
-}
-
-function salvarNovoAtendimento(){
-  const id=parseInt(document.getElementById('na-lead').value);
-  if(!id){alert('Selecione um lead.');return;}
-  const l=leads.find(function(x){return x.id===id;});
-  if(!l)return;
-  const etapa=document.getElementById('na-etapa').value;
-  const texto=document.getElementById('na-interacao').value.trim();
-  l.etapa=etapa;l.status='funil';l.dias=0;
-  if(!l.interacoes)l.interacoes=[];
-  if(texto){
-    const hoje=new Date();
-    const data=String(hoje.getDate()).padStart(2,'0')+'/'+String(hoje.getMonth()+1).padStart(2,'0')+'/'+hoje.getFullYear();
-    l.interacoes.push({data:data,texto:texto,autor:currentUser?currentUser.nome:l.corretor});
-  }
-  closeModal('novo-atend-modal');
-  renderFunil();
 }
 
 function gerarNumNeg(){return 'NEG-'+String(leadNid).padStart(3,'0');}
@@ -2439,8 +2388,8 @@ async function salvarNovoLeadInline(){
   };
   leads.push(newLead);
   await dbSaveLead(newLead);
-  // Select this lead automatically
-  document.getElementById('na-lead-id').value=newLead.id;
+  // Select this lead automatically (use DB id if available)
+  document.getElementById('na-lead-id').value=newLead._dbId||newLead.id;
   document.getElementById('na-busca').value=newLead.nome;
   var pm=PM[newLead.perfil]||PM['indef'];
   var sel=document.getElementById('na-lead-selecionado');
@@ -2452,19 +2401,29 @@ async function salvarNovoLeadInline(){
   document.getElementById('na-resultados').style.display='none';
 }
 function openNovoAtendimento(){
-  if(!document.getElementById('na-lead'))return;
-  var sel=document.getElementById('na-lead');
-  var filtrados=getAccessFilter(leads,'corretor');
-  sel.innerHTML='<option value="">Selecione um lead cadastrado...</option>'+
-    filtrados.map(function(l){
-      return '<option value="'+l.id+'">'+l.nome+' · '+(l.cidade||'—')+' · '+(PM[l.perfil]?PM[l.perfil].l:l.perfil)+'</option>';
-    }).join('');
-  document.getElementById('na-lead-info').style.display='none';
-  document.getElementById('na-obs').value='';
-  if(currentUser&&currentUser.perfil==='corretor'){
-    document.getElementById('na-corretor').value=currentUser.nome;
-  }
-  document.getElementById('novo-atend-modal').classList.add('open');
+  var modal=document.getElementById('novo-atend-modal');
+  if(!modal)return;
+  // Reset search
+  var busca=document.getElementById('na-busca');
+  if(busca)busca.value='';
+  var res=document.getElementById('na-resultados');
+  if(res){res.style.display='none';res.innerHTML='';}
+  var sel=document.getElementById('na-lead-selecionado');
+  if(sel)sel.style.display='none';
+  var hidId=document.getElementById('na-lead-id');
+  if(hidId)hidId.value='';
+  var form=document.getElementById('na-novo-lead-form');
+  if(form)form.style.display='none';
+  var btnNL=document.getElementById('btn-novo-lead-inline');
+  if(btnNL)btnNL.textContent='+ Cadastrar novo lead';
+  // Reset obs/interacao
+  var obs=document.getElementById('na-interacao')||document.getElementById('na-obs');
+  if(obs)obs.value='';
+  // Set corretor
+  var corrEl=document.getElementById('na-corretor');
+  if(currentUser&&currentUser.perfil==='corretor'&&corrEl)corrEl.value=currentUser.nome;
+  modal.classList.add('open');
+  setTimeout(function(){if(busca)busca.focus();},100);
 }
 
 function preencherDadosNovoAtend(){
@@ -2905,49 +2864,6 @@ function renderPlano(){
       <td style="font-size:12px">${a.resp}</td>
       <td><span style="font-size:10px;padding:2px 7px;border-radius:8px;background:${cc}18;color:${cc};font-weight:600">${CAT_MAP[a.cat]}</span></td>
       <td style="color:var(--text-sec);font-size:12px">${a.prazo?a.prazo.split('-').reverse().join('/'):'—'}</td>
-      <td><span class="pill ${pm.cls}">${pm.l}</span></td>
-      <td><span class="pill ${sp.cls}">${sp.l}</span></td>
-      <td style="min-width:100px">
-        <div style="height:6px;background:var(--bg-sec);border-radius:3px"><div style="height:6px;border-radius:3px;background:${a.status==='concluido'?'#3B6D11':'#9B3060'};width:${a.prog}%"></div></div>
-        <div style="font-size:10px;color:var(--text-ter);margin-top:2px">${a.prog}%</div>
-      </td>
-      <td>
-        <button class="btn btn-sm" onclick="openPlanoModal(${a.id})">Editar</button>
-        <button class="btn btn-sm btn-danger" onclick="delAcao(${a.id})">Excluir</button>
-      </td>
-    </tr>`;
-  }).join(''):'<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text-ter)">Nenhuma ação encontrada</td></tr>';
-}
-
-function openPlanoModal(id){
-  planoEditId=id||null;
-  document.getElementById('plano-modal-title').textContent=id?'Editar ação':'Nova ação';
-  const a=id?acoes.find(x=>x.id===id):null;
-  document.getElementById('pl-titulo').value=a?a.titulo:'';
-  document.getElementById('pl-desc').value=a?a.desc:'';
-  document.getElementById('pl-resp').value=a?a.resp:'José Antonio Martins';
-  document.getElementById('pl-cat').value=a?a.cat:'vendas';
-  document.getElementById('pl-prazo').value=a?a.prazo:'';
-  document.getElementById('pl-prior').value=a?a.prior:'media';
-  document.getElementById('pl-status').value=a?a.status:'pendente';
-  document.getElementById('pl-prog').value=a?a.prog:0;
-  document.getElementById('plano-modal').classList.add('open');
-}
-
-function salvarPlano(){
-  const titulo=document.getElementById('pl-titulo').value.trim();if(!titulo)return;
-  const obj={id:planoEditId||planoNid++,titulo,desc:document.getElementById('pl-desc').value.trim(),resp:document.getElementById('pl-resp').value,cat:document.getElementById('pl-cat').value,prazo:document.getElementById('pl-prazo').value,prior:document.getElementById('pl-prior').value,status:document.getElementById('pl-status').value,prog:parseInt(document.getElementById('pl-prog').value)||0};
-  if(planoEditId)acoes=acoes.map(a=>a.id===planoEditId?obj:a);else acoes.push(obj);
-  closeModal('plano-modal');renderPlano();
-}
-
-function delAcao(id){acoes=acoes.filter(a=>a.id!==id);renderPlano();}
-
-// ============================================================
-// INIT
-// ============================================================
-loadAllData();
-e:12px">${a.prazo?a.prazo.split('-').reverse().join('/'):'—'}</td>
       <td><span class="pill ${pm.cls}">${pm.l}</span></td>
       <td><span class="pill ${sp.cls}">${sp.l}</span></td>
       <td style="min-width:100px">
