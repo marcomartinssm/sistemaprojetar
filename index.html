@@ -2956,7 +2956,8 @@ function openPlanoModal(id){
 function salvarPlano(){
   const titulo=document.getElementById('pl-titulo').value.trim();if(!titulo)return;
   const obj={id:planoEditId||planoNid++,titulo,desc:document.getElementById('pl-desc').value.trim(),resp:document.getElementById('pl-resp').value,cat:document.getElementById('pl-cat').value,prazo:document.getElementById('pl-prazo').value,prior:document.getElementById('pl-prior').value,status:document.getElementById('pl-status').value,prog:parseInt(document.getElementById('pl-prog').value)||0};
-  if(planoEditId)acoes=acoes.map(a=>a.id===planoEditId?obj:a);else acoes.push(obj);
+  if(planoEditId)acoes=acoes.map(function(a){return a.id===planoEditId?obj:a;});else acoes.push(obj);
+  dbSaveAcao(obj);
   closeModal('plano-modal');renderPlano();
 }
 
