@@ -1281,6 +1281,8 @@ async function loadAllData(){
     disparos=(rD||[]).map(function(r){return{id:r.id,_dbId:r.id,lead:r.lead_nome,leadId:r.lead_id,data:r.data_disparo,canal:r.canal,msg:r.mensagem,corretor:r.corretor,status:r.status};});
     nutrNid=disparos.length?Math.max.apply(null,disparos.map(function(d){return d.id;}))+1:1;
   }catch(e){console.error('loadAllData error:',e);}
+  console.log('[loadAllData] leads:', leads.length, 'negociacoes:', negociacoes.length);
+  if(negociacoes.length>0)console.log('[loadAllData] primeiro neg:', JSON.stringify(negociacoes[0]));
   hideLoading();
   initDashboard();
 }
@@ -1774,9 +1776,6 @@ function moverLead(id,dir){moverNeg(id,dir);}
 // ============================================================
 let prevMesFiltro='todos';let prevChart1=null,prevChart2=null;
 function initPrev(){
-  const el=document.getElementById('prev-filters');
-  el.innerHTML='<span class="filter-btn active" onclick="setPrevMes(\'todos\',this)">Todos</span>'+
-    MESES.map(m=>`<span class="filter-btn" onclick="setPrevMes('${m}',this)">${m}</span>`).join('');
   renderPrevKpis();renderPrevGeralChart();renderPrevCorretorChart();renderPrevTabela();
 }
 function setPrevMes(m,el){prevMesFiltro=m;document.querySelectorAll('#prev-filters .filter-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderPrevKpis();}
