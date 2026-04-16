@@ -2904,9 +2904,16 @@ function renderPlano(){
   if(!document.getElementById('plano-f-status'))return;
   const fs=document.getElementById('plano-f-status').value;
   const fp=document.getElementById('plano-f-prior').value;
+  var PRIOR_ORD={alta:0,media:1,baixa:2};
   let lista=getAccessFilter(acoes,'resp');
   if(fs)lista=lista.filter(a=>a.status===fs);
   if(fp)lista=lista.filter(a=>a.prior===fp);
+  lista=lista.slice().sort(function(a,b){
+    var po=(PRIOR_ORD[a.prior]||1)-(PRIOR_ORD[b.prior]||1);
+    if(po!==0)return po;
+    var da=a.prazo||'9999';var db=b.prazo||'9999';
+    return da<db?-1:da>db?1:0;
+  });
   renderPlanoKpis();
   renderPlanoCharts();
   renderPlanoKanban(lista);
