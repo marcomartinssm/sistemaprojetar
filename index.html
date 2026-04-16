@@ -1311,34 +1311,9 @@ const ETAPAS=[
 ];
 const MESES=['Jan','Fev','Mar','Abr','Mai','Jun'];
 
-const CORRETORES=[
-  {nome:'Juliano Borges',unidade:'Criciúma',mensal:{vendas:4,valor:1240000,meta:1000000},bimestral:{vendas:7,valor:2180000,meta:2000000},trimestral:{vendas:11,valor:3420000,meta:3000000},semestral:{vendas:20,valor:6100000,meta:6000000},anual:{vendas:38,valor:11800000,meta:12000000}},
-  {nome:'Samuel Apolinário',unidade:'Criciúma',mensal:{vendas:3,valor:936000,meta:900000},bimestral:{vendas:6,valor:1870000,meta:1800000},trimestral:{vendas:9,valor:2810000,meta:2700000},semestral:{vendas:17,valor:5300000,meta:5400000},anual:{vendas:31,valor:9700000,meta:10800000}},
-  {nome:'Silvana Sorato',unidade:'Criciúma',mensal:{vendas:2,valor:624000,meta:800000},bimestral:{vendas:5,valor:1560000,meta:1600000},trimestral:{vendas:7,valor:2190000,meta:2400000},semestral:{vendas:13,valor:4060000,meta:4800000},anual:{vendas:25,valor:7800000,meta:9600000}},
-  {nome:'Fernando Corrêa',unidade:'Araranguá',mensal:{vendas:3,valor:890000,meta:800000},bimestral:{vendas:5,valor:1650000,meta:1600000},trimestral:{vendas:8,valor:2480000,meta:2400000},semestral:{vendas:15,valor:4700000,meta:4800000},anual:{vendas:29,valor:9200000,meta:9600000}},
-  {nome:'Bervaldo Zilli',unidade:'Araranguá',mensal:{vendas:2,valor:580000,meta:700000},bimestral:{vendas:4,valor:1250000,meta:1400000},trimestral:{vendas:6,valor:1870000,meta:2100000},semestral:{vendas:11,valor:3440000,meta:4200000},anual:{vendas:22,valor:6860000,meta:8400000}},
-  {nome:'Marlon Araújo',unidade:'Araranguá',mensal:{vendas:2,valor:620000,meta:700000},bimestral:{vendas:4,valor:1300000,meta:1400000},trimestral:{vendas:7,valor:2000000,meta:2100000},semestral:{vendas:12,valor:3800000,meta:4200000},anual:{vendas:24,valor:7400000,meta:8400000}},
-  {nome:'Joice Pereira',unidade:'Araranguá',mensal:{vendas:1,valor:320000,meta:600000},bimestral:{vendas:3,valor:960000,meta:1200000},trimestral:{vendas:5,valor:1580000,meta:1800000},semestral:{vendas:9,valor:2850000,meta:3600000},anual:{vendas:18,valor:5700000,meta:7200000}},
-  {nome:'Renato Lobo',unidade:'Araranguá',mensal:{vendas:2,valor:550000,meta:600000},bimestral:{vendas:4,valor:1100000,meta:1200000},trimestral:{vendas:6,valor:1650000,meta:1800000},semestral:{vendas:11,valor:3200000,meta:3600000},anual:{vendas:21,valor:6100000,meta:7200000}},
-];
-const AGENC=[
-  {nome:'Juliano Borges',agenc:18,meta:15},
-  {nome:'Fernando Corrêa',agenc:15,meta:15},
-  {nome:'Samuel Apolinário',agenc:14,meta:15},
-  {nome:'Marlon Araújo',agenc:12,meta:12},
-  {nome:'Bervaldo Zilli',agenc:11,meta:12},
-  {nome:'Silvana Sorato',agenc:9,meta:12},
-  {nome:'Renato Lobo',agenc:8,meta:10},
-  {nome:'Joice Pereira',agenc:6,meta:10},
-];
-const FUNIL_DATA=[
-  {id:'pre',nome:'Pré-atendimento',count:184,conv:100},
-  {id:'atend',nome:'Atendimento',count:121,conv:66},
-  {id:'agend',nome:'Ag. de visita',count:74,conv:61},
-  {id:'visita',nome:'Visita',count:48,conv:65},
-  {id:'proposta',nome:'Proposta',count:22,conv:46},
-  {id:'fechamento',nome:'Fechamento',count:15,conv:68},
-];
+
+
+
 
 let leads=[];
 let leadNid=1;
@@ -1474,41 +1449,130 @@ function closeModal(id){document.getElementById(id).classList.remove('open');}
 let dbPeriod='mensal';
 let dbChart1=null,dbChart2=null,dbChart3=null,dbChart4=null;
 function initDashboard(){
+  renderDBKpis();
   renderDBRanking();
   renderDBFunil();
   renderDBAgenc();
+  renderDBMetaChart();
+  renderDBPrevChart();
+  renderDBPerfilChart();
+}
+
+function renderDBMetaChart(){
+  var el=document.getElementById('db-metaChart');
+  if(!el)return;
+  // Group negociosFechados by corretor
+  var corrs=Object.keys(CM);
+  var labels=corrs.map(function(n){return n.split(' ')[0];});
+  var metaVals=corrs.map(function(n){
+    var m=metas.filter(function(x){return x.corretor===n;});
+    return Math.round(m.reduce(function(s,x){return s+x.valor;},0)/1000);
+  });
+  var realVals=corrs.map(function(n){
+    return Math.round(negociosFechados.filter(function(x){return x.corretor===n;}).reduce(function(s,x){return s+(x.valor||0);},0)/1000);
+  });
   if(dbChart1)dbChart1.destroy();
-  dbChart1=new Chart(document.getElementById('db-metaChart'),{type:'bar',data:{labels:['Ana','Carlos','Mariana','Pedro','Tatiane'],datasets:[{label:'Meta',data:[1000,900,800,700,600],backgroundColor:'#D3D1C7',borderRadius:4},{label:'Real',data:[1240,936,624,580,312],backgroundColor:'#9B3060',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>v+'K'},grid:{color:'rgba(0,0,0,.05)'}},x:{grid:{display:false}}}}});
+  dbChart1=new Chart(el,{type:'bar',data:{labels:labels,datasets:[
+    {label:'Meta',data:metaVals,backgroundColor:'#D3D1C7',borderRadius:4},
+    {label:'Real',data:realVals,backgroundColor:'#9B3060',borderRadius:4}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{y:{ticks:{callback:function(v){return v+'K';}},grid:{color:'rgba(0,0,0,.05)'}},x:{grid:{display:false}}}}});
+}
+
+function renderDBPrevChart(){
+  var el=document.getElementById('db-prevChart');
+  if(!el)return;
+  var mesesPrev=['Abr/2026','Mai/2026','Jun/2026','Jul/2026','Ago/2026'];
+  var realizado=mesesPrev.map(function(m){
+    return Math.round(negociosFechados.filter(function(n){return n.data&&n.data.includes(m.split('/')[0]);}).reduce(function(s,n){return s+(n.valor||0);},0)/1000);
+  });
+  var previsto=mesesPrev.map(function(m){
+    return Math.round(NEGOCIOS.filter(function(n){return n.prev===m;}).reduce(function(s,n){return s+(n.valor||0);},0)/1000);
+  });
   if(dbChart2)dbChart2.destroy();
-  dbChart2=new Chart(document.getElementById('db-prevChart'),{type:'line',data:{labels:MESES,datasets:[{label:'Realizado',data:[780,850,920,890,null,null],borderColor:'#9B3060',backgroundColor:'rgba(155,48,96,.08)',tension:.4,fill:true,pointRadius:4},{label:'Previsto',data:[null,null,null,890,1050,1240],borderColor:'#BA7517',borderDash:[5,4],tension:.4,pointRadius:4,backgroundColor:'rgba(186,117,23,.06)',fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>v+'K'},grid:{color:'rgba(0,0,0,.05)'}},x:{grid:{display:false},ticks:{autoSkip:false}}}}});
+  dbChart2=new Chart(el,{type:'line',data:{labels:mesesPrev,datasets:[
+    {label:'Realizado',data:realizado,borderColor:'#9B3060',backgroundColor:'rgba(155,48,96,.08)',tension:.4,fill:true,pointRadius:4},
+    {label:'Previsto',data:previsto,borderColor:'#BA7517',borderDash:[5,4],tension:.4,pointRadius:4,backgroundColor:'rgba(186,117,23,.06)',fill:true}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{y:{ticks:{callback:function(v){return v+'K';}},grid:{color:'rgba(0,0,0,.05)'}},x:{grid:{display:false},ticks:{autoSkip:false}}}}});
+}
+
+function renderDBPerfilChart(){
+  var el=document.getElementById('db-perfilChart');
+  if(!el)return;
+  var mcmv=leads.filter(function(l){return l.perfil==='mcmv';}).length;
+  var medio=leads.filter(function(l){return l.perfil==='medio';}).length;
+  var alto=leads.filter(function(l){return l.perfil==='alto';}).length;
+  var indef=leads.filter(function(l){return l.perfil==='indef'||!l.perfil;}).length;
   if(dbChart3)dbChart3.destroy();
-  dbChart3=new Chart(document.getElementById('db-perfilChart'),{type:'doughnut',data:{labels:['MCMV','Médio','Alto'],datasets:[{data:[72,68,44],backgroundColor:['#185FA5','#3B6D11','#534AB7'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false}}}});
-  if(dbChart4)dbChart4.destroy();
-  dbChart4=new Chart(document.getElementById('db-agencChart'),{type:'bar',data:{labels:['Ana','Carlos','Pedro','Mariana','Tatiane'],datasets:[{label:'Meta',data:[15,15,12,12,10],backgroundColor:'#D3D1C7',borderRadius:4},{label:'Real',data:[18,14,11,9,6],backgroundColor:'#534AB7',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'rgba(0,0,0,.05)'}},x:{grid:{display:false}}}}});
+  dbChart3=new Chart(el,{type:'doughnut',data:{labels:['MCMV','Médio','Alto','Indefinido'],datasets:[{
+    data:[mcmv,medio,alto,indef],backgroundColor:['#185FA5','#3B6D11','#534AB7','#888780'],borderWidth:0
+  }]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false}}}});
 }
+
 function renderDBRanking(){
-  const sorted=[...CORRETORES].sort((a,b)=>b[dbPeriod].valor-a[dbPeriod].valor);
-  const maxV=sorted[0][dbPeriod].valor;
-  document.getElementById('db-ranking').innerHTML=sorted.map((c,i)=>{
-    const d=c[dbPeriod];const pct=Math.round(d.valor/d.meta*100);const bp=Math.round(d.valor/maxV*100);const cm=CM[c.nome];
-    return`<div class="rank-row"><span class="rank-num">${i+1}</span><div style="width:32px;height:32px;border-radius:50%;background:${cm.b};color:${cm.c};display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0">${cm.av}</div><div class="rank-info"><div class="rank-name">${c.nome}</div><div class="rank-sub">${c.unidade} · ${d.vendas} vendas</div><div class="bar-bg"><div class="bar-fill" style="width:${bp}%;background:${cm.c}"></div></div></div><div class="rank-right"><div class="rank-val">${fmtM(d.valor)}</div><div class="rank-pct ${pct>=100?'kpi-pos':'kpi-neg'}">${pct}% da meta</div></div></div>`;
+  var el=document.getElementById('db-ranking');
+  if(!el)return;
+  var corrs=Object.keys(CM).map(function(nome){
+    var negs=negociacoes.filter(function(n){return n.corretor===nome;});
+    var fech=negociosFechados.filter(function(n){return n.corretor===nome;});
+    var vol=fech.reduce(function(s,n){return s+(n.valor||0);},0);
+    var metaV=metas.filter(function(m){return m.corretor===nome;}).reduce(function(s,m){return s+(m.valor||0);},0);
+    return{nome:nome,vol:vol,fech:fech.length,negs:negs.length,meta:metaV};
+  }).sort(function(a,b){return b.vol-a.vol;});
+  var maxV=corrs.length&&corrs[0].vol>0?corrs[0].vol:1;
+  el.innerHTML=corrs.map(function(c,i){
+    var cm=CM[c.nome]||{av:'?',c:'#888',b:'#eee'};
+    var pct=c.meta>0?Math.round(c.vol/c.meta*100):0;
+    var bp=Math.round(c.vol/maxV*100);
+    return '<div class="rank-row"><span class="rank-num">'+(i+1)+'</span>'+
+      '<div style="width:32px;height:32px;border-radius:50%;background:'+cm.b+';color:'+cm.c+';display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0">'+cm.av+'</div>'+
+      '<div class="rank-info"><div class="rank-name">'+c.nome+'</div>'+
+      '<div class="rank-sub">'+c.fech+' fechamento(s) · '+c.negs+' negoc.</div>'+
+      '<div class="bar-bg"><div class="bar-fill" style="width:'+bp+'%;background:'+cm.c+'"></div></div></div>'+
+      '<div class="rank-right"><div class="rank-val">'+fmtM(c.vol)+'</div>'+
+      '<div class="rank-pct '+(pct>=100?'kpi-pos':'kpi-neg')+'">'+pct+'% da meta</div></div></div>';
   }).join('');
 }
-function setPeriod(p,el){dbPeriod=p;document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderDBRanking();}
+
 function renderDBFunil(){
-  document.getElementById('db-funil').innerHTML=FUNIL_DATA.map(f=>{
-    const et=ETAPAS.find(e=>e.id===f.id);
-    return`<div class="funil-row"><div class="funil-dot" style="background:${et.cor}"></div><span class="funil-name">${f.nome}</span><div class="funil-bar-wrap"><div class="funil-bar-bg"><div class="funil-bar-fill" style="width:${f.conv}%;background:${et.cor}"></div></div></div><span class="funil-count">${f.count}</span><span class="funil-pct">${f.conv}%</span></div>`;
+  var el=document.getElementById('db-funil');
+  if(!el)return;
+  var total=negociacoes.length||1;
+  el.innerHTML=ETAPAS.map(function(e){
+    var c=negociacoes.filter(function(n){return n.etapa===e.id;}).length;
+    var p=Math.round(c/total*100);
+    return '<div class="funil-row"><div class="funil-dot" style="background:'+e.cor+'"></div>'+
+      '<span class="funil-name">'+e.label+'</span>'+
+      '<div class="funil-bar-wrap"><div class="funil-bar-bg"><div class="funil-bar-fill" style="width:'+Math.min(p,100)+'%;background:'+e.cor+'"></div></div></div>'+
+      '<span class="funil-count">'+c+'</span><span class="funil-pct">'+p+'%</span></div>';
   }).join('');
 }
+
 function renderDBAgenc(){
-  const maxA=AGENC[0].agenc;
-  document.getElementById('db-agenc').innerHTML=AGENC.map((a,i)=>{
-    const cm=CM[a.nome];const pct=Math.round(a.agenc/a.meta*100);const bp=Math.round(a.agenc/maxA*100);
-    return`<div class="rank-row"><span class="rank-num">${i+1}</span><div style="width:26px;height:26px;border-radius:50%;background:${cm.b};color:${cm.c};display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;flex-shrink:0">${cm.av}</div><div class="rank-info"><div class="rank-name" style="font-size:12px">${a.nome}</div><div class="bar-bg"><div class="bar-fill" style="width:${bp}%;background:${cm.c}"></div></div></div><div class="rank-right"><div class="rank-val" style="font-size:12px">${a.agenc} agenc.</div><div class="rank-pct ${pct>=100?'kpi-pos':'kpi-neg'}">${pct}%</div></div></div>`;
+  var el=document.getElementById('db-agenc');
+  if(!el)return;
+  // Use negociosFechados as "agenciamentos"
+  var corrs=Object.keys(CM).map(function(nome){
+    return{nome:nome,agenc:negociosFechados.filter(function(n){return n.corretor===nome;}).length,meta:3};
+  }).sort(function(a,b){return b.agenc-a.agenc;});
+  var maxA=corrs.length&&corrs[0].agenc>0?corrs[0].agenc:1;
+  el.innerHTML=corrs.map(function(a,i){
+    var cm=CM[a.nome]||{av:'?',c:'#888',b:'#eee'};
+    var pct=Math.round(a.agenc/a.meta*100);
+    var bp=Math.round(a.agenc/maxA*100);
+    return '<div class="rank-row"><span class="rank-num">'+(i+1)+'</span>'+
+      '<div style="width:26px;height:26px;border-radius:50%;background:'+cm.b+';color:'+cm.c+';display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;flex-shrink:0">'+cm.av+'</div>'+
+      '<div class="rank-info"><div class="rank-name" style="font-size:12px">'+a.nome+'</div>'+
+      '<div class="bar-bg"><div class="bar-fill" style="width:'+bp+'%;background:'+cm.c+'"></div></div></div>'+
+      '<div class="rank-right"><div class="rank-val" style="font-size:12px">'+a.agenc+' negóc.</div>'+
+      '<div class="rank-pct '+(pct>=100?'kpi-pos':'kpi-neg')+'">'+pct+'%</div></div></div>';
   }).join('');
 }
-function setUnidade(u,el){document.querySelectorAll('.top-bar .filter-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');}
+
+function setPeriod(p,el){dbPeriod=p;document.querySelectorAll('.ptab').forEach(function(t){t.classList.remove('active');});el.classList.add('active');renderDBRanking();}
+function setUnidade(u,el){document.querySelectorAll('.top-bar .filter-btn').forEach(function(b){b.classList.remove('active');});el.classList.add('active');}
+
 
 // ============================================================
 // FUNIL DE VENDAS
